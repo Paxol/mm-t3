@@ -2,64 +2,130 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql" // NOTE: sqlite does not work with NextAuth.js
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id      String @id @default(cuid())
-    title   String
-    content String
+model SavedTransaction {
+  id           Int    @id @default(autoincrement())
+  amount       Float
+  description  String
+  type         String
+  categoryId   Int?
+  walletId     Int?
+  walletFromId Int?
+  walletToId   Int?
+  userid       Int
+
+  user       User      @relation(fields: [userid], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id])
+  wallet     Wallet?   @relation("st-w-w", fields: [walletId], references: [id])
+  walletFrom Wallet?   @relation("st-w-wf", fields: [walletFromId], references: [id])
+  walletTo   Wallet?   @relation("st-w-wt", fields: [walletToId], references: [id])
 }
 
-// NextAuth.js Models
-// NOTE: When using postgresql, mysql or sqlserver, 
-// uncomment the @db.Text annotations below
-// @see https://next-auth.js.org/schemas/models
+model Transaction {
+  id           Int     @id @default(autoincrement())
+  amount       Float
+  date         String
+  description  String
+  type         String
+  future       Boolean @default(false)
+  categoryId   Int?
+  walletId     Int?
+  walletFromId Int?
+  walletToId   Int?
+  userid       Int
+
+  user       User      @relation(fields: [userid], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id])
+  wallet     Wallet?   @relation("t-w-w", fields: [walletId], references: [id])
+  walletFrom Wallet?   @relation("t-w-wf", fields: [walletFromId], references: [id])
+  walletTo   Wallet?   @relation("t-w-wt", fields: [walletToId], references: [id])
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  atBalance Boolean? @default(true)
+  color     String
+  name      String
+  type      String
+  userid    Int
+
+  user              User               @relation(fields: [userid], references: [id])
+  SavedTransactions SavedTransaction[]
+  Transactions      Transaction[]
+}
+
+model Wallet {
+  id           Int      @id @default(autoincrement())
+  deleted      Boolean?
+  currentValue Float
+  initialValue Float
+  name         String
+  type         Int
+  userid       Int
+
+  user                        User               @relation(fields: [userid], references: [id])
+  SavedTransaction_wallet     SavedTransaction[] @relation("st-w-w")
+  SavedTransaction_walletFrom SavedTransaction[] @relation("st-w-wf")
+  SavedTransaction_walletTo   SavedTransaction[] @relation("st-w-wt")
+
+  Transaction_wallet     Transaction[] @relation("t-w-w")
+  Transaction_walletFrom Transaction[] @relation("t-w-wf")
+  Transaction_walletTo   Transaction[] @relation("t-w-wt")
+}
+
+// Necessary for Next auth
 model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? // @db.Text
-    session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                Int     @id @default(autoincrement())
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           Int      @id @default(autoincrement())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
+  id            Int       @id @default(autoincrement())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  accounts          Account[]
+  sessions          Session[]
+  SavedTransactions SavedTransaction[]
+  Transactions      Transaction[]
+  Categories        Category[]
+  Wallets           Wallet[]
 }
 
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-    @@unique([identifier, token])
+  @@unique([identifier, token])
 }

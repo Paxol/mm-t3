@@ -1,5 +1,5 @@
 {
-  "name": "@acme/nextjs",
+  "name": "@paxol/nextjs",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,13 +9,13 @@
     "lint": "SKIP_ENV_VALIDATION=1 next lint",
     "start": "next start",
     "type-check": "tsc --noEmit",
-    "with-env": "dotenv -e ../../.env --"
+    "with-env": "dotenv -e ../.env --"
   },
   "dependencies": {
-    "@acme/api": "*",
-    "@acme/auth": "*",
-    "@acme/db": "*",
-    "@acme/tailwind-config": "*",
+    "@paxol/api": "*",
+    "@paxol/auth": "*",
+    "@paxol/db": "*",
+    "@paxol/tailwind-config": "*",
     "@tanstack/react-query": "^4.23.0",
     "@trpc/client": "^10.9.0",
     "@trpc/next": "^10.9.0",
