@@ -31,7 +31,7 @@ model SavedTransaction {
 model Transaction {
   id           Int     @id @default(autoincrement())
   amount       Float
-  date         String
+  date         DateTime
   description  String
   type         String
   future       Boolean @default(false)
@@ -56,6 +56,8 @@ model Category {
   type      String
   userid    Int
 
+  oldId     String?
+
   user              User               @relation(fields: [userid], references: [id])
   SavedTransactions SavedTransaction[]
   Transactions      Transaction[]
@@ -69,6 +71,8 @@ model Wallet {
   name         String
   type         Int
   userid       Int
+
+  oldId     String?
 
   user                        User               @relation(fields: [userid], references: [id])
   SavedTransaction_wallet     SavedTransaction[] @relation("st-w-w")

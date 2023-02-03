@@ -12,11 +12,14 @@ const config = {
         tsconfigRootDir: __dirname,
         project: [
           "./tsconfig.json",
-          "./apps/*/tsconfig.json",
+          "./app/tsconfig.json",
           "./packages/*/tsconfig.json",
         ],
       },
       rules: {
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
         "@typescript-eslint/no-unused-vars": [
           "error",
           {

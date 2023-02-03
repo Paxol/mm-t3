@@ -28,6 +28,7 @@ importers:
 
   app:
     specifiers:
+      '@formkit/auto-animate': 1.0.0-beta.6
       '@paxol/api': '*'
       '@paxol/auth': '*'
       '@paxol/db': '*'
@@ -41,18 +42,24 @@ importers:
       '@types/react': ^18.0.25
       '@types/react-dom': ^18.0.9
       autoprefixer: ^10.4.13
+      classnames: ^2.3.2
       dotenv-cli: ^7.0.0
       eslint: ^8.32.0
       eslint-config-next: ^13.1.6
+      jotai: ^2.0.0
+      moment: ^2.29.4
       next: ^13.1.6
       next-auth: ^4.19.0
       postcss: ^8.4.21
       react: 18.2.0
       react-dom: 18.2.0
+      react-icons: ^4.7.1
+      react-tiny-fab: ^4.0.4
       tailwindcss: ^3.2.4
       typescript: ^4.9.4
       zod: ^3.20.2
     dependencies:
+      '@formkit/auto-animate': 1.0.0-beta.6
       '@paxol/api': link:../packages/api
       '@paxol/auth': link:../packages/auth
       '@paxol/db': link:../packages/db
@@ -62,10 +69,15 @@ importers:
       '@trpc/next': 10.9.1_xct5i5wpfctm4ykzpuv5zmefxu
       '@trpc/react-query': 10.9.1_zbmbdjlledb5jdkr7yrwtjkb5m
       '@trpc/server': 10.9.1
+      classnames: 2.3.2
+      jotai: 2.0.0_react@18.2.0
+      moment: 2.29.4
       next: 13.1.6_biqbaboplfbrettd7655fr4n2y
       next-auth: 4.19.2_3vryta7zmbcsw4rrqf4axjqggm
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
+      react-icons: 4.7.1_react@18.2.0
+      react-tiny-fab: 4.0.4_react@18.2.0
       zod: 3.20.2
     devDependencies:
       '@types/node': 18.11.18
@@ -86,6 +98,7 @@ importers:
       '@trpc/client': ^10.9.0
       '@trpc/server': ^10.9.0
       eslint: ^8.32.0
+      moment: ^2.29.4
       superjson: 1.9.1
       typescript: ^4.9.4
       zod: ^3.20.2
@@ -94,6 +107,7 @@ importers:
       '@paxol/db': link:../db
       '@trpc/client': 10.9.1_@trpc+server@10.9.1
       '@trpc/server': 10.9.1
+      moment: 2.29.4
       superjson: 1.9.1
       zod: 3.20.2
     devDependencies:
@@ -369,6 +383,10 @@ packages:
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
       - supports-color
+
+  /@formkit/auto-animate/1.0.0-beta.6:
+    resolution: {integrity: sha512-PVDhLAlr+B4Xb7e+1wozBUWmXa6BFU8xUPR/W/E+TsQhPS1qkAdAsJ25keEnFrcePSnXHrOsh3tiFbEToOzV9w==}
+    dev: false
 
   /@humanwhocodes/config-array/0.11.8:
     resolution: {integrity: sha512-UybHIJzJnR5Qc/MsD9Kr+RpO2h+/P1GhOwdiLPXK5TWk5sgTdu88bTD9UP+CKbPPh5Rni1u0GjAdYQLemG8g+g==}
@@ -1236,6 +1254,10 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
+
+  /classnames/2.3.2:
+    resolution: {integrity: sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==}
+    dev: false
 
   /client-only/0.0.1:
     resolution: {integrity: sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==}
@@ -2402,6 +2424,18 @@ packages:
     resolution: {integrity: sha512-njj0VL2TsIxCtgzhO+9RRobBvws4oYyCM8TpvoUQwl/MbIM3NFJRR9+e6x0sS5xXaP1t6OCBkaBME98OV9zU5A==}
     dev: false
 
+  /jotai/2.0.0_react@18.2.0:
+    resolution: {integrity: sha512-04G0CRZQgp3xrFAezd6X14psZ2TRGekHeYMBcbDJ/BR8ZJQPS+j0YkMTxUxyG58HJnN2+adfj5sWQWoqgtp1XQ==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      react: '>=17.0.0'
+    peerDependenciesMeta:
+      react:
+        optional: true
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /js-sdsl/4.3.0:
     resolution: {integrity: sha512-mifzlm2+5nZ+lEcLJMoBK0/IH/bDg8XnJfd/Wq6IP+xoCjLZsTOnV2QpxlVbX9bMnkl5PdEjNtBJ9Cj1NjifhQ==}
 
@@ -2575,6 +2609,10 @@ packages:
 
   /minimist/1.2.7:
     resolution: {integrity: sha512-bzfL1YUZsP41gmu/qjrEk0Q6i2ix/cVeAhbCbqH9u3zYutS1cLg00qhrD0M2MVdCcx4Sc0UpP2eBWo9rotpq6g==}
+
+  /moment/2.29.4:
+    resolution: {integrity: sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==}
+    dev: false
 
   /ms/2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
@@ -3117,6 +3155,14 @@ packages:
       scheduler: 0.23.0
     dev: false
 
+  /react-icons/4.7.1_react@18.2.0:
+    resolution: {integrity: sha512-yHd3oKGMgm7zxo3EA7H2n7vxSoiGmHk5t6Ou4bXsfcgWyhfDKMpyKfhHR6Bjnn63c+YXBLBPUql9H4wPJM6sXw==}
+    peerDependencies:
+      react: '*'
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /react-is/16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
     dev: true
@@ -3125,6 +3171,15 @@ packages:
     resolution: {integrity: sha512-yFNHrlVEReVYKsLI5lF05tZoHveA5pGzjFbFJY/3pOqqjGOmMmqx83N4hIjN2n6E1AOa+eQEUxs3CgRnPmT0RQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
+  /react-tiny-fab/4.0.4_react@18.2.0:
+    resolution: {integrity: sha512-PxT6gEnIQR2vFfeIaa1Oq4PRX+cIEDbEfbS6PyevWCQngrKfqjMKPEcZOaaURaUclB9u3RilgjkaBUQFVlbWcg==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: '>=16.8'
     dependencies:
       react: 18.2.0
     dev: false
