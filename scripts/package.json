@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "clean": "rm -rf .next .turbo node_modules",
-    "lint": "SKIP_ENV_VALIDATION=1 next lint",
     "migrate": "pnpm with-env ts-node migrate.ts",
     "type-check": "tsc --noEmit",
     "with-env": "dotenv -e ../.env --"
