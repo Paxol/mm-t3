@@ -2,7 +2,7 @@ import { FC, PropsWithChildren, useMemo } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import type { Category } from "@prisma/client";
+import type { Category, Wallet } from "@prisma/client";
 import moment from "moment";
 import { signIn, useSession } from "next-auth/react";
 import { RiMoneyEuroCircleLine } from "react-icons/ri";
@@ -10,25 +10,43 @@ import { RiMoneyEuroCircleLine } from "react-icons/ri";
 import { api } from "~/utils/api";
 import { PageLayout } from "~/components/PageLayout";
 
-const LoginPage = () => (
-  <main className="container mx-auto flex flex-col items-center justify-center h-screen p-4">
-    <h1 className="text-5xl md:text-[5rem] leading-normal font-extrabold text-gray-300">
-      UMoney
-    </h1>
-    <span className="text-3xl md:text-[2rem] leading-normal font-bold text-gray-300 text-center">
-      Traccia le tue finanze
-    </span>
+type TransactionWithCategory = {
+  type: string;
+  date: Date;
+  category: Category | null;
+  id: string;
+  amount: number;
+  description: string;
+  future: boolean;
+};
 
-    <div className="grid gap-3 pt-3 mt-3 text-center lg:w-1/3">
-      <button
-        className="text-center p-6 duration-500 border-2 border-gray-500 text-lg text-gray-300 rounded shadow-xl motion-safe:hover:scale-105"
-        onClick={() => signIn("google")}
-      >
-        Login with Google
-      </button>
-    </div>
-  </main>
-);
+function getMonthEarningAndExpenses(
+  transactions: TransactionWithCategory[],
+): [number, number] {
+  let earnings = 0,
+    expenses = 0;
+
+  transactions.forEach((item) => {
+    if (moment(item.date).isBefore(moment().startOf("month"))) return;
+
+    if (item.type === "i") earnings += item.amount;
+    else if (item.type === "o") expenses += item.amount;
+  });
+
+  return [earnings, expenses];
+}
+
+function sumWalletsBalances(wallets: Wallet[]): [number, number] {
+  let cash = 0,
+    investments = 0;
+
+  wallets.forEach((item) => {
+    if (item.type === 0) cash += item.currentValue;
+    else if (item.type === 1) investments += item.currentValue;
+  });
+
+  return [cash, investments];
+}
 
 const Home: NextPage = () => {
   const { data } = useSession();
@@ -55,6 +73,26 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
+const LoginPage = () => (
+  <main className="container mx-auto flex flex-col items-center justify-center h-screen p-4">
+    <h1 className="text-5xl md:text-[5rem] leading-normal font-extrabold text-gray-300">
+      UMoney
+    </h1>
+    <span className="text-3xl md:text-[2rem] leading-normal font-bold text-gray-300 text-center">
+      Traccia le tue finanze
+    </span>
+
+    <div className="grid gap-3 pt-3 mt-3 text-center lg:w-1/3">
+      <button
+        className="text-center p-6 duration-500 border-2 border-gray-500 text-lg text-gray-300 rounded shadow-xl motion-safe:hover:scale-105"
+        onClick={() => signIn("google")}
+      >
+        Login with Google
+      </button>
+    </div>
+  </main>
+);
 
 const DashboardPage = () => {
   const { isLoading, data, error } = api.dashboard.data.useQuery();
@@ -101,41 +139,15 @@ const Resume = () => {
   const [infoContainer] = useAutoAnimate<HTMLDivElement>();
 
   const [earnings, expenses] = useMemo(() => {
-    let earnings = 0;
-    let expenses = 0;
+    if (!data || !data.Transactions) return [undefined, undefined];
 
-    data?.Transactions.forEach((item) => {
-      if (moment(item.date).isBefore(moment().startOf("month"))) return;
-
-      switch (item.type) {
-        case "i":
-          earnings += item.amount;
-          break;
-        case "o":
-          expenses += item.amount;
-          break;
-      }
-    });
-
-    return [earnings, expenses];
+    return getMonthEarningAndExpenses(data.Transactions);
   }, [data]);
 
   const [cash, investments] = useMemo(() => {
-    let cash = 0;
-    let savings = 0;
+    if (!data || !data.Wallets) return [undefined, undefined];
 
-    data?.Wallets.forEach((item) => {
-      switch (item.type) {
-        case 0:
-          cash += item.currentValue;
-          break;
-        case 1:
-          savings += item.currentValue;
-          break;
-      }
-    });
-
-    return [cash, savings];
+    return sumWalletsBalances(data.Wallets);
   }, [data]);
 
   const isLoading = data === undefined;
@@ -153,14 +165,14 @@ const Resume = () => {
         {!showNoWalletMessage && (
           <>
             <div className="flex flex-col flex-none space-y-5 mt-5 justify-center self-center">
-              <Balance cash={data && cash} investments={data && investments} />
+              <Balance cash={cash} investments={investments} />
 
               <div className="flex space-x-8 flex-none">
                 {/* Entrate */}
-                <InOutSum type="in" value={data && earnings} />
+                <InOutSum type="in" value={earnings} />
 
                 {/* Uscite */}
-                <InOutSum type="out" value={data && expenses} />
+                <InOutSum type="out" value={expenses} />
               </div>
             </div>
           </>
