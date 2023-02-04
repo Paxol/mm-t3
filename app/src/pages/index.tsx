@@ -75,7 +75,7 @@ const DashboardPage = () => {
       >
         <Resume />
         {showCategoriesCards && (
-          <div className="flex flex-4 flex-col sm:flex-row lg:flex-col xl:space-x-4 sm:space-x-4 lg:space-x-0 xl:flex-row xl:flex-6">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 lg:flex-col lg:space-x-0 lg:flex-[3_3_0%] 2xl:space-x-4 2xl:flex-row 2xl:flex-6">
             <Categories type="in" />
             <Categories type="out" />
           </div>
@@ -120,7 +120,7 @@ const Resume = () => {
     return [earnings, expenses];
   }, [data]);
 
-  const [cash, savings] = useMemo(() => {
+  const [cash, investments] = useMemo(() => {
     let cash = 0;
     let savings = 0;
 
@@ -144,7 +144,7 @@ const Resume = () => {
   const showNoWalletMessage = !isLoading && !hasWallets;
 
   return (
-    <Card className="flex-8 w-full mb-4 text-center sm:flex-row sm:space-x-6 sm:text-left lg:px-8 lg:space-x-16 xl:px-12 xl:space-x-24">
+    <Card className="lg:flex-[7_7_0%] xl:flex-[6_6_0%] items-center w-full mb-4 text-center sm:flex-row sm:space-x-6 sm:text-left lg:px-8 lg:space-x-16 xl:px-12 xl:space-x-24">
       <div
         ref={infoContainer}
         className={showNoWalletMessage ? "flex-auto" : ""}
@@ -153,98 +153,14 @@ const Resume = () => {
         {!showNoWalletMessage && (
           <>
             <div className="flex flex-col flex-none space-y-5 mt-5 justify-center self-center">
-              {data ? (
-                <div className="flex flex-col">
-                  <span className="text-3xl font-bold text-white">
-                    € {cash.toFixed(2)}
-                  </span>
-                  <span className="text-sm font-medium text-gray-400 mb-3">
-                    in liquidità
-                  </span>
-                  <span className="text-xl font-bold text-white">
-                    € {savings.toFixed(2)}
-                  </span>
-                  <span className="text-sm font-medium text-gray-400">
-                    in investimenti
-                  </span>
-                </div>
-              ) : (
-                <div className="flex flex-col animate-pulse">
-                  <span className="text-3xl rounded-xl bg-gray-700 w-32">
-                    &nbsp;
-                  </span>
-                  <span className="text-sm font-medium text-gray-400 mb-3">
-                    in liquidità
-                  </span>
-                  <span className="text-xl rounded-md bg-gray-700 w-24">
-                    &nbsp;
-                  </span>
-                  <span className="text-sm font-medium text-gray-400">
-                    in investimenti
-                  </span>
-                </div>
-              )}
+              <Balance cash={data && cash} investments={data && investments} />
 
               <div className="flex space-x-8 flex-none">
                 {/* Entrate */}
-                <div className="flex flex-col">
-                  <div className="flex items-center space-x-2 animate-pulse">
-                    <svg
-                      className="flex-none text-green-500"
-                      stroke="currentColor"
-                      fill="currentColor"
-                      strokeWidth="0"
-                      viewBox="0 0 448 512"
-                      height="1em"
-                      width="1em"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M34.9 289.5l-22.2-22.2c-9.4-9.4-9.4-24.6 0-33.9L207 39c9.4-9.4 24.6-9.4 33.9 0l194.3 194.3c9.4 9.4 9.4 24.6 0 33.9L413 289.4c-9.5 9.5-25 9.3-34.3-.4L264 168.6V456c0 13.3-10.7 24-24 24h-32c-13.3 0-24-10.7-24-24V168.6L69.2 289.1c-9.3 9.8-24.8 10-34.3.4z"></path>
-                    </svg>
-                    {data ? (
-                      <span className="flex-auto font-medium text-white">
-                        € {earnings.toFixed(2)}
-                      </span>
-                    ) : (
-                      <span className="flex-auto rounded-md bg-gray-700 w-16">
-                        &nbsp;
-                      </span>
-                    )}
-                  </div>
-                  <span className="font-light whitespace-nowrap text-gray-500">
-                    Entrate del mese
-                  </span>
-                </div>
+                <InOutSum type="in" value={data && earnings} />
 
                 {/* Uscite */}
-                <div className="flex flex-col">
-                  <div className="flex items-center space-x-2 animate-pulse">
-                    <svg
-                      className="flex-none text-red-500"
-                      stroke="currentColor"
-                      fill="currentColor"
-                      strokeWidth="0"
-                      viewBox="0 0 448 512"
-                      height="1em"
-                      width="1em"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M413.1 222.5l22.2 22.2c9.4 9.4 9.4 24.6 0 33.9L241 473c-9.4 9.4-24.6 9.4-33.9 0L12.7 278.6c-9.4-9.4-9.4-24.6 0-33.9l22.2-22.2c9.5-9.5 25-9.3 34.3.4L184 343.4V56c0-13.3 10.7-24 24-24h32c13.3 0 24 10.7 24 24v287.4l114.8-120.5c9.3-9.8 24.8-10 34.3-.4z"></path>
-                    </svg>
-                    {data ? (
-                      <span className="flex-auto font-medium text-white">
-                        € {expenses.toFixed(2)}
-                      </span>
-                    ) : (
-                      <span className="flex-auto rounded-md bg-gray-700 w-16">
-                        &nbsp;
-                      </span>
-                    )}
-                  </div>
-                  <span className="font-light whitespace-nowrap text-gray-500">
-                    Uscite del mese
-                  </span>
-                </div>
+                <InOutSum type="out" value={data && expenses} />
               </div>
             </div>
           </>
@@ -288,10 +204,7 @@ const Resume = () => {
             </>
           ) : (
             <div className="animate-pulse">
-              <div
-                className="rounded-xl bg-gray-700 h-full"
-                style={{ minHeight: "204px" }}
-              >
+              <div className="rounded-xl bg-gray-700 min-h-[204px] h-full">
                 &nbsp;
               </div>
             </div>
@@ -301,6 +214,75 @@ const Resume = () => {
     </Card>
   );
 };
+
+const InOutSum: FC<{
+  type: "in" | "out";
+  value?: number;
+}> = ({ type, value }) => {
+  const svgClasses =
+    type === "in" ? "flex-none text-green-500" : "flex-none text-red-500";
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center space-x-2">
+        <svg
+          className={svgClasses}
+          stroke="currentColor"
+          fill="currentColor"
+          strokeWidth="0"
+          viewBox="0 0 448 512"
+          height="1em"
+          width="1em"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {type === "in" ? (
+            <path d="M34.9 289.5l-22.2-22.2c-9.4-9.4-9.4-24.6 0-33.9L207 39c9.4-9.4 24.6-9.4 33.9 0l194.3 194.3c9.4 9.4 9.4 24.6 0 33.9L413 289.4c-9.5 9.5-25 9.3-34.3-.4L264 168.6V456c0 13.3-10.7 24-24 24h-32c-13.3 0-24-10.7-24-24V168.6L69.2 289.1c-9.3 9.8-24.8 10-34.3.4z"></path>
+          ) : (
+            <path d="M413.1 222.5l22.2 22.2c9.4 9.4 9.4 24.6 0 33.9L241 473c-9.4 9.4-24.6 9.4-33.9 0L12.7 278.6c-9.4-9.4-9.4-24.6 0-33.9l22.2-22.2c9.5-9.5 25-9.3 34.3.4L184 343.4V56c0-13.3 10.7-24 24-24h32c13.3 0 24 10.7 24 24v287.4l114.8-120.5c9.3-9.8 24.8-10 34.3-.4z"></path>
+          )}
+        </svg>
+        {value ? (
+          <span className="flex-auto font-medium text-white">
+            € {value.toFixed(2)}
+          </span>
+        ) : (
+          <span className="flex-auto rounded-md bg-gray-700 w-16 animate-pulse">
+            &nbsp;
+          </span>
+        )}
+      </div>
+      <span className="font-light whitespace-nowrap text-gray-500">
+        {type === "in" ? "Entrate" : "Uscite"} del mese
+      </span>
+    </div>
+  );
+};
+
+const Balance: FC<{
+  cash?: number;
+  investments?: number;
+}> = ({ cash, investments }) => (
+  <div className="flex flex-col">
+    {cash ? (
+      <span className="text-3xl font-bold text-white">€ {cash.toFixed(2)}</span>
+    ) : (
+      <span className="text-3xl rounded-xl bg-gray-700 w-32 animate-pulse">
+        &nbsp;
+      </span>
+    )}
+    <span className="text-sm font-medium text-gray-400 mb-3">in liquidità</span>
+    {investments ? (
+      <span className="text-xl font-bold text-white">
+        € {investments.toFixed(2)}
+      </span>
+    ) : (
+      <span className="text-xl rounded-md bg-gray-700 w-24 animate-pulse">
+        &nbsp;
+      </span>
+    )}
+    <span className="text-sm font-medium text-gray-400">in investimenti</span>
+  </div>
+);
 
 const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
   const ctx = api.useContext();
@@ -341,7 +323,7 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
   }, [data, type]);
 
   return (
-    <Card className="flex-3 mb-4">
+    <Card className="flex-1 mb-4">
       <div className="flex flex-none justify-between items-center mb-3">
         <span className="text-lg font-medium dark:text-white">
           {type === "in" ? "Entrate" : "Uscite"}
@@ -388,7 +370,7 @@ const Card: FC<PropsWithChildren<{ className?: string }>> = ({
   className,
   children,
 }) => {
-  let myClass = "bg-gray-800 flex flex-col p-4 rounded-md shadow-md";
+  let myClass = "bg-gray-800 flex flex-col px-6 py-4 rounded-md shadow-md";
 
   if (className) myClass = `${myClass} ${className}`;
 
