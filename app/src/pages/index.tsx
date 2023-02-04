@@ -76,8 +76,8 @@ const DashboardPage = () => {
         <Resume />
         {showCategoriesCards && (
           <div className="flex flex-4 flex-col sm:flex-row lg:flex-col xl:space-x-4 sm:space-x-4 lg:space-x-0 xl:flex-row xl:flex-6">
-            <Categories type="i" />
-            <Categories type="o" />
+            <Categories type="in" />
+            <Categories type="out" />
           </div>
         )}
       </div>
@@ -302,7 +302,7 @@ const Resume = () => {
   );
 };
 
-const Categories: FC<{ type?: string }> = ({ type = "i" }) => {
+const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
   const ctx = api.useContext();
   const data = ctx.dashboard.data.getData();
 
@@ -344,7 +344,7 @@ const Categories: FC<{ type?: string }> = ({ type = "i" }) => {
     <Card className="flex-3 mb-4">
       <div className="flex flex-none justify-between items-center mb-3">
         <span className="text-lg font-medium dark:text-white">
-          {type === "i" ? "Entrate" : "Uscite"}
+          {type === "in" ? "Entrate" : "Uscite"}
         </span>
       </div>
 
@@ -357,7 +357,7 @@ const Categories: FC<{ type?: string }> = ({ type = "i" }) => {
             <div className="flex-none">
               <div
                 className={`w-10 h-10 ${
-                  type === "i" ? "bg-green-400" : "bg-red-400"
+                  type === "in" ? "bg-green-400" : "bg-red-400"
                 } text-gray-800 p-1.5 rounded-2xl`}
               >
                 <RiMoneyEuroCircleLine className="w-full h-full" />

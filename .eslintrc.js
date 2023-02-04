@@ -3,10 +3,7 @@ const config = {
   extends: ["prettier", "eslint:recommended"],
   overrides: [
     {
-      extends: [
-        "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/recommended-requiring-type-checking",
-      ],
+      extends: ["plugin:@typescript-eslint/recommended"],
       files: ["**/*.ts", "**/*.tsx"],
       parserOptions: {
         tsconfigRootDir: __dirname,
@@ -18,10 +15,6 @@ const config = {
         ],
       },
       rules: {
-        "@typescript-eslint/no-unsafe-return": "off",
-        "@typescript-eslint/no-unsafe-call": "off",
-        "@typescript-eslint/no-unsafe-argument": "off",
-        "@typescript-eslint/no-unsafe-member-access": "off",
         "@typescript-eslint/no-unused-vars": [
           "error",
           {
