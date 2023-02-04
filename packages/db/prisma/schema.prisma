@@ -11,17 +11,17 @@ datasource db {
 }
 
 model SavedTransaction {
-  id           Int    @id @default(autoincrement())
+  id           String  @id @default(cuid())
   amount       Float
   description  String
   type         String
-  categoryId   Int?
-  walletId     Int?
-  walletFromId Int?
-  walletToId   Int?
-  userid       Int
+  categoryId   String?
+  walletId     String?
+  walletFromId String?
+  walletToId   String?
+  userid       String
 
-  user       User      @relation(fields: [userid], references: [id])
+  user       User      @relation(fields: [userid], references: [id], onDelete: Cascade)
   category   Category? @relation(fields: [categoryId], references: [id])
   wallet     Wallet?   @relation("st-w-w", fields: [walletId], references: [id])
   walletFrom Wallet?   @relation("st-w-wf", fields: [walletFromId], references: [id])
@@ -29,19 +29,19 @@ model SavedTransaction {
 }
 
 model Transaction {
-  id           Int     @id @default(autoincrement())
+  id           String   @id @default(cuid())
   amount       Float
   date         DateTime
   description  String
   type         String
-  future       Boolean @default(false)
-  categoryId   Int?
-  walletId     Int?
-  walletFromId Int?
-  walletToId   Int?
-  userid       Int
+  future       Boolean  @default(false)
+  categoryId   String?
+  walletId     String?
+  walletFromId String?
+  walletToId   String?
+  userid       String
 
-  user       User      @relation(fields: [userid], references: [id])
+  user       User      @relation(fields: [userid], references: [id], onDelete: Cascade)
   category   Category? @relation(fields: [categoryId], references: [id])
   wallet     Wallet?   @relation("t-w-w", fields: [walletId], references: [id])
   walletFrom Wallet?   @relation("t-w-wf", fields: [walletFromId], references: [id])
@@ -49,32 +49,32 @@ model Transaction {
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   atBalance Boolean? @default(true)
   color     String
   name      String
   type      String
-  userid    Int
+  userid    String
 
-  oldId     String?
+  oldId String?
 
-  user              User               @relation(fields: [userid], references: [id])
+  user              User               @relation(fields: [userid], references: [id], onDelete: Cascade)
   SavedTransactions SavedTransaction[]
   Transactions      Transaction[]
 }
 
 model Wallet {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(cuid())
   deleted      Boolean?
   currentValue Float
   initialValue Float
   name         String
   type         Int
-  userid       Int
+  userid       String
 
-  oldId     String?
+  oldId String?
 
-  user                        User               @relation(fields: [userid], references: [id])
+  user                        User               @relation(fields: [userid], references: [id], onDelete: Cascade)
   SavedTransaction_wallet     SavedTransaction[] @relation("st-w-w")
   SavedTransaction_walletFrom SavedTransaction[] @relation("st-w-wf")
   SavedTransaction_walletTo   SavedTransaction[] @relation("st-w-wt")
@@ -86,8 +86,8 @@ model Wallet {
 
 // Necessary for Next auth
 model Account {
-  id                Int     @id @default(autoincrement())
-  userId            Int
+  id                String  @id @default(cuid())
+  userId            String
   type              String
   provider          String
   providerAccountId String
@@ -104,15 +104,15 @@ model Account {
 }
 
 model Session {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       Int
+  userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            Int       @id @default(autoincrement())
+  id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
   emailVerified DateTime?
