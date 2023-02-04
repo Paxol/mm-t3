@@ -9,6 +9,7 @@ import { RiMoneyEuroCircleLine } from "react-icons/ri";
 
 import { api } from "~/utils/api";
 import { PageLayout } from "~/components/PageLayout";
+import { Transaction } from "~/components/Transaction";
 
 type TransactionWithCategory = {
   type: string;
@@ -373,9 +374,38 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
 };
 
 const LatestTransactions: FC = () => {
-  // const query = api.dashboard.latestTransactions.useQuery();
+  const ctx = api.useContext();
+  const dashboardData = ctx.dashboard.data.getData();
 
-  return null;
+  const {
+    data: latestTransactions,
+    isLoading,
+    error,
+  } = api.dashboard.latestTransactions.useQuery();
+
+  const [ref] = useAutoAnimate<HTMLDivElement>();
+
+  const loading = !dashboardData || isLoading;
+
+  return (
+    <Card className="flex-1 mb-4">
+      <div className="flex flex-none justify-between items-center mb-3">
+        <span className="text-lg font-medium dark:text-white">Transazioni</span>
+      </div>
+
+      <div ref={ref} className="flex flex-col">
+        {loading ? (
+          <span className="bg-gray-700 w-full h-[319px] animate-pulse">
+            &nbsp;
+          </span>
+        ) : !error ? (
+          <span className="dark:text-white">Si è verificato un errore</span>
+        ) : (
+          latestTransactions?.map((t) => <Transaction key={t.id} element={t} />)
+        )}
+      </div>
+    </Card>
+  );
 };
 
 const Card: FC<PropsWithChildren<{ className?: string }>> = ({

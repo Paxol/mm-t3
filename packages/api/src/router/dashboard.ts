@@ -1,4 +1,6 @@
-import moment from 'moment/moment';
+import moment from "moment/moment";
+import { Category, Wallet } from "@paxol/db";
+
 // import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -25,7 +27,7 @@ export const dashboardRouter = createTRPCRouter({
         Wallets: {
           where: {
             deleted: false,
-          }
+          },
         },
         Transactions: {
           select: {
@@ -41,24 +43,62 @@ export const dashboardRouter = createTRPCRouter({
           where: {
             date: {
               gte: moment().subtract(1, "months").toDate(),
-            }
-          }
-        }
+            },
+          },
+        },
       },
       where: {
-        id: ctx.session.user.id
-      }
-    });    
+        id: ctx.session.user.id,
+      },
+    });
   }),
 
-  latestTransactions: protectedProcedure.query(async ({ ctx }) => 
-    await ctx.prisma.transaction.findMany({
-      where: {
-        userid: ctx.session.user.id,
-      },
-      take: 4,
-      orderBy: {
-        date: "desc"
-      }
-    }))
+  latestTransactions: protectedProcedure.query(
+    async ({ ctx }): Promise<TransactionWithJoins[]> =>
+      await ctx.prisma.transaction.findMany({
+        select: {
+          id: true,
+          amount: true,
+          date: true,
+          description: true,
+          type: true,
+          future: true,
+          categoryId: true,
+          walletId: true,
+          walletFromId: true,
+          walletToId: true,
+          userid: true,
+
+          category: true,
+          wallet: true,
+          walletFrom: true,
+          walletTo: true,
+        },
+        where: {
+          userid: ctx.session.user.id,
+        },
+        take: 4,
+        orderBy: {
+          date: "desc",
+        },
+      }),
+  ),
 });
+
+export type TransactionWithJoins = {
+  category: Category | null;
+  wallet: Wallet | null;
+  walletFrom: Wallet | null;
+  walletTo: Wallet | null;
+  id: string;
+  amount: number;
+  description: string;
+  type: string;
+  categoryId: string | null;
+  walletId: string | null;
+  walletFromId: string | null;
+  walletToId: string | null;
+  userid: string;
+  date: Date;
+  future: boolean;
+};
