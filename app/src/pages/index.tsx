@@ -1,15 +1,17 @@
-import { FC, PropsWithChildren, useMemo } from "react";
+import { FC, useMemo } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { Category, Wallet } from "@prisma/client";
 import moment from "moment";
-import { signIn, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { RiMoneyEuroCircleLine } from "react-icons/ri";
 
 import { api } from "~/utils/api";
+import { LoginPage } from "~/components/LoginPage";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
+import { Card } from "../components/Card";
 
 type TransactionWithCategory = {
   type: string;
@@ -74,26 +76,6 @@ const Home: NextPage = () => {
 };
 
 export default Home;
-
-const LoginPage = () => (
-  <main className="container mx-auto flex flex-col items-center justify-center h-screen p-4">
-    <h1 className="text-5xl md:text-[5rem] leading-normal font-extrabold text-gray-300">
-      UMoney
-    </h1>
-    <span className="text-3xl md:text-[2rem] leading-normal font-bold text-gray-300 text-center">
-      Traccia le tue finanze
-    </span>
-
-    <div className="grid gap-3 pt-3 mt-3 text-center lg:w-1/3">
-      <button
-        className="text-center p-6 duration-500 border-2 border-gray-500 text-lg text-gray-300 rounded shadow-xl motion-safe:hover:scale-105"
-        onClick={() => signIn("google")}
-      >
-        Login with Google
-      </button>
-    </div>
-  </main>
-);
 
 const DashboardPage = () => {
   const { isLoading, data, error } = api.dashboard.data.useQuery();
@@ -394,11 +376,12 @@ const LatestTransactions: FC = () => {
       </div>
 
       <div ref={ref} className="flex flex-col">
-        {loading ? (
-          <span className="bg-gray-700 w-full h-[319px] animate-pulse">
+        {loading && (
+          <span className="bg-gray-700 w-full h-[359px] animate-pulse">
             &nbsp;
           </span>
-        ) : !error ? (
+        )}
+        {!loading && error ? (
           <span className="dark:text-white">Si è verificato un errore</span>
         ) : (
           latestTransactions?.map((t) => <Transaction key={t.id} element={t} />)
@@ -406,15 +389,4 @@ const LatestTransactions: FC = () => {
       </div>
     </Card>
   );
-};
-
-const Card: FC<PropsWithChildren<{ className?: string }>> = ({
-  className,
-  children,
-}) => {
-  let myClass = "bg-gray-800 flex flex-col px-6 py-4 rounded-md shadow-md";
-
-  if (className) myClass = `${myClass} ${className}`;
-
-  return <div className={myClass}>{children}</div>;
 };

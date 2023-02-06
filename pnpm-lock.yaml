@@ -29,6 +29,7 @@ importers:
   app:
     specifiers:
       '@formkit/auto-animate': 1.0.0-beta.6
+      '@headlessui/react': ^1.7.9
       '@paxol/api': '*'
       '@paxol/auth': '*'
       '@paxol/db': '*'
@@ -60,6 +61,7 @@ importers:
       zod: ^3.20.2
     dependencies:
       '@formkit/auto-animate': 1.0.0-beta.6
+      '@headlessui/react': 1.7.9_biqbaboplfbrettd7655fr4n2y
       '@paxol/api': link:../packages/api
       '@paxol/auth': link:../packages/auth
       '@paxol/db': link:../packages/db
@@ -412,6 +414,18 @@ packages:
 
   /@formkit/auto-animate/1.0.0-beta.6:
     resolution: {integrity: sha512-PVDhLAlr+B4Xb7e+1wozBUWmXa6BFU8xUPR/W/E+TsQhPS1qkAdAsJ25keEnFrcePSnXHrOsh3tiFbEToOzV9w==}
+    dev: false
+
+  /@headlessui/react/1.7.9_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-Bobh/+mDciu8kEE2hvdukFYjbfaG4MEkK/6TjWOgqcODLKYpRhWPKPE+dCcCSz/YrwjFVrEAMOiWtfk6sW20/w==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: ^16 || ^17 || ^18
+      react-dom: ^16 || ^17 || ^18
+    dependencies:
+      client-only: 0.0.1
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
     dev: false
 
   /@humanwhocodes/config-array/0.11.8:

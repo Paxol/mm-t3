@@ -1,7 +1,8 @@
 import { FC } from "react";
 import moment from "moment";
+import { BiTrash } from "react-icons/bi";
 import { RiMoneyEuroCircleLine } from "react-icons/ri";
-import { TransactionWithJoins } from "@paxol/api/src/router/dashboard";
+import { TransactionWithJoins } from "@paxol/api/src/types";
 
 function getWalletText({ wallet, walletFrom, walletTo }: TransactionWithJoins) {
   if (walletFrom && walletTo) return walletFrom.name + " → " + walletTo.name;
@@ -17,12 +18,18 @@ function getColor(type: string) {
 
 export const Transaction: FC<{
   element: TransactionWithJoins;
-}> = ({ element }) => {
+  showTrash?: boolean;
+  onElementClick?: (element: TransactionWithJoins) => void;
+  onTrashClick?: (id: string) => void;
+}> = ({ element, onTrashClick, onElementClick, showTrash = false }) => {
   const categoryName = element.category?.name || "Transazione";
   const color = getColor(element.type);
 
   return (
-    <div className="flex border-t first:border-0 last:pb-0 py-3 space-x-3 items-center dark:border-gray-700">
+    <div
+      className="flex border-t first:border-0 last:pb-0 py-3 space-x-3 items-center dark:border-gray-700"
+      onClick={() => onElementClick && onElementClick(element)}
+    >
       <div className="flex-none">
         <div className={`w-10 h-10 ${color} text-gray-800 p-1.5 rounded-2xl`}>
           <RiMoneyEuroCircleLine className="w-full h-full" />
@@ -32,6 +39,11 @@ export const Transaction: FC<{
         <span className="text-lg leading-none font-semibold mb-1">
           {categoryName}
         </span>
+        {element.description && (
+          <span className="text-sm leading-none font-medium text-gray-800 dark:text-gray-100 mb-1">
+            {element.description}
+          </span>
+        )}
         <span className="text-sm leading-none text-gray-800 dark:text-gray-100 mb-2">
           {getWalletText(element)}
         </span>
@@ -47,6 +59,18 @@ export const Transaction: FC<{
         {element.type === "t" && <TransactionArrow />}
         <span className="text-white">€ {element.amount.toFixed(2)}</span>
       </div>
+
+      {showTrash && (
+        <div
+          className="flex-none flex items-center p-2 m-0 cursor-pointer dark:text-white dark:hover:text-red-400 hover:text-red-500"
+          onClick={(e) => {
+            e.stopPropagation();
+            onTrashClick && onTrashClick(element.id);
+          }}
+        >
+          <BiTrash />
+        </div>
+      )}
     </div>
   );
 };

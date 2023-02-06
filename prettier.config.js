@@ -11,7 +11,7 @@ module.exports = {
     require.resolve("prettier-plugin-tailwindcss"),
     require.resolve("@ianvs/prettier-plugin-sort-imports"),
   ],
-  tailwindConfig: "./packages/config/tailwind",
+  tailwindConfig: "./packages/config/tailwind/index.js",
   importOrder: [
     "^(react/(.*)$)|^(react$)|^(react-native(.*)$)",
     "^(next/(.*)$)|^(next$)",
