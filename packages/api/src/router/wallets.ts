@@ -9,6 +9,9 @@ export const walletsRouter = createTRPCRouter({
         userid: ctx.session.user.id,
         deleted: false,
       },
+      orderBy: {
+        name: "desc"
+      }
     });
   }),
 });

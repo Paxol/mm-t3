@@ -4,8 +4,8 @@ import { BiTrash } from "react-icons/bi";
 import { RiMoneyEuroCircleLine } from "react-icons/ri";
 import { TransactionWithJoins } from "@paxol/api/src/types";
 
-function getWalletText({ wallet, walletFrom, walletTo }: TransactionWithJoins) {
-  if (walletFrom && walletTo) return walletFrom.name + " → " + walletTo.name;
+function getWalletText({ wallet, walletTo }: TransactionWithJoins) {
+  if (wallet && walletTo) return wallet.name + " → " + walletTo.name;
   else return wallet?.name;
 }
 
@@ -20,7 +20,7 @@ export const Transaction: FC<{
   element: TransactionWithJoins;
   showTrash?: boolean;
   onElementClick?: (element: TransactionWithJoins) => void;
-  onTrashClick?: (id: string) => void;
+  onTrashClick?: (element: TransactionWithJoins) => void;
 }> = ({ element, onTrashClick, onElementClick, showTrash = false }) => {
   const categoryName = element.category?.name || "Transazione";
   const color = getColor(element.type);
@@ -65,7 +65,7 @@ export const Transaction: FC<{
           className="flex-none flex items-center p-2 m-0 cursor-pointer dark:text-white dark:hover:text-red-400 hover:text-red-500"
           onClick={(e) => {
             e.stopPropagation();
-            onTrashClick && onTrashClick(element.id);
+            onTrashClick && onTrashClick(element);
           }}
         >
           <BiTrash />

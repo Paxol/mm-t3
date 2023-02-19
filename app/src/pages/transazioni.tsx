@@ -1,21 +1,24 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useAtom } from "jotai";
 import moment from "moment";
 import { useSession } from "next-auth/react";
+import { RiArrowLeftRightLine } from "react-icons/ri";
 import { TransactionWithJoins } from "@paxol/api/src/types";
 
 import { api } from "~/utils/api";
 import { Card } from "~/components/Card";
+import { fabVisibleAtom } from "~/components/FabContainer";
 import { LoginPage } from "~/components/LoginPage";
-import { PageLayout } from "~/components/PageLayout";
+import { PageLayout, fabsAtom } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
-import { TansactionDialogContainer } from "~/components/TransactionDialogs/TansactionDialogContainer";
 import {
-  TansactionDialogProvider,
-  useTansactionDialogContext,
-} from "~/components/TransactionDialogs/context";
+  TansactionDialogContainer,
+  dialogActionAtom,
+  dialogOpenAtom,
+} from "~/components/TransactionDialogs/TansactionDialogContainer";
 
 function sumTransactionsAmount(transactions: TransactionWithJoins[]): number {
   let somma = 0;
@@ -27,8 +30,10 @@ function sumTransactionsAmount(transactions: TransactionWithJoins[]): number {
 }
 
 function getDailyTransactionsArray(
-  transactions: TransactionWithJoins[],
-): [string, TransactionWithJoins[]][] {
+  transactions?: TransactionWithJoins[],
+): [string, TransactionWithJoins[]][] | null {
+  if (!transactions || transactions.length === 0) return null;
+
   const map = new Map<string, TransactionWithJoins[]>();
 
   transactions.forEach((t) => {
@@ -43,6 +48,32 @@ function getDailyTransactionsArray(
 
 const Transactions: NextPage = () => {
   const { data } = useSession();
+  const [, setFabs] = useAtom(fabsAtom);
+  const [, setFabVisible] = useAtom(fabVisibleAtom);
+
+  const [, setDialogData] = useAtom(dialogActionAtom);
+
+  useEffect(() => {
+    setFabs([
+      {
+        text: "Transazione generica",
+        color: "rgb(156, 163, 175)",
+        icon: (
+          <RiArrowLeftRightLine style={{ width: "1.25em", height: "1.25em" }} />
+        ),
+        onClick: () => setDialogData(["open", { type: "AddTransaction" }]),
+      },
+    ]);
+  }, [setDialogData, setFabs]);
+
+  useEffect(() => {
+    setFabVisible(true);
+
+    // setFabs();
+    return () => {
+      setFabs([]);
+    };
+  }, [setFabVisible, setFabs]);
 
   return (
     <>
@@ -57,10 +88,8 @@ const Transactions: NextPage = () => {
           <LoginPage />
         ) : (
           <PageLayout name="Tansazioni">
-            <TansactionDialogProvider>
-              <TansactionDialogContainer />
-              <TransactionsPage />
-            </TansactionDialogProvider>
+            <TansactionDialogContainer />
+            <TransactionsPage />
           </PageLayout>
         )}
       </div>
@@ -86,6 +115,8 @@ const TransactionsPage = () => {
   const error =
     transactionQuery.error || categoriesQuery.error || walletsQuery.error;
 
+  const dailyTransactions = useMemo(() => getDailyTransactionsArray(transactionQuery.data), [transactionQuery.data]);
+
   if (isLoading) return <span>Loading</span>;
   if (error) {
     console.error(error);
@@ -94,9 +125,9 @@ const TransactionsPage = () => {
 
   return (
     <Card>
-      {getDailyTransactionsArray(transactionQuery.data).map(([date, t]) => (
+      {dailyTransactions?.map(([date, t]) => (
         <DailyTransactions key={date} date={date} transactions={t} />
-      ))}
+      )) ?? <span className="text-center dark:text-white">Nessuna transazione trovata</span>}
     </Card>
   );
 };
@@ -107,13 +138,45 @@ const DailyTransactions: FC<{
 }> = ({ date, transactions }) => {
   const [collapseRef] = useAutoAnimate();
 
-  const { open: openDialog } = useTansactionDialogContext();
+  const [, setDialogOpen] = useAtom(dialogOpenAtom);
+  const [, setDialogData] = useAtom(dialogActionAtom);
 
   const [open, setOpen] = useState(true);
 
   const somma = useMemo(
     () => sumTransactionsAmount(transactions),
     [transactions],
+  );
+
+  const handleTxClick = useCallback(
+    (t: TransactionWithJoins) => {
+      setDialogData([
+        "open",
+        {
+          type: "EditTransaction",
+          transaction: t,
+        },
+      ]);
+      setDialogOpen(true);
+    },
+    [setDialogData, setDialogOpen],
+  );
+
+  const handleTxTrashClick = useCallback(
+    (t: TransactionWithJoins) => {
+      setDialogData([
+        "open",
+        {
+          type: "DeleteTransaction",
+
+          id: t.id,
+          amount: t.amount,
+          description: t.description,
+        },
+      ]);
+      setDialogOpen(true);
+    },
+    [setDialogData, setDialogOpen],
   );
 
   return (
@@ -132,14 +195,8 @@ const DailyTransactions: FC<{
             <Transaction
               key={t.id}
               element={t}
-              onElementClick={() => {
-                openDialog({
-                  type: "EditTransaction",
-                  mode: "modify",
-                  transaction: t,
-                });
-              }}
-              // onTrashClick={() => openDelete(t)}
+              onElementClick={handleTxClick}
+              onTrashClick={handleTxTrashClick}
               showTrash
             />
           ))}

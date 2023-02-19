@@ -38,6 +38,9 @@ export function SearchableCombobox<T>(props: Props<T>) {
     }
   }, [items, onItemChange, keyMap, selectedItem]);
 
+  // Prevent search input changing from uncontrolled to controller of first render
+  if (!selectedItem) return null;
+
   const filteredItems =
     query === ""
       ? items

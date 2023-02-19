@@ -1,13 +1,15 @@
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { Category, Wallet } from "@prisma/client";
+import { useAtom } from "jotai";
 import moment from "moment";
 import { useSession } from "next-auth/react";
 import { RiMoneyEuroCircleLine } from "react-icons/ri";
 
 import { api } from "~/utils/api";
+import { fabVisibleAtom } from "~/components/FabContainer";
 import { LoginPage } from "~/components/LoginPage";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
@@ -53,6 +55,11 @@ function sumWalletsBalances(wallets: Wallet[]): [number, number] {
 
 const Home: NextPage = () => {
   const { data } = useSession();
+  const [, setFabVisible] = useAtom(fabVisibleAtom);
+
+  useEffect(() => {
+    setFabVisible(false);
+  }, [setFabVisible]);
 
   return (
     <>
@@ -79,21 +86,17 @@ export default Home;
 
 const DashboardPage = () => {
   const { isLoading, data, error } = api.dashboard.data.useQuery();
-  const [firstRowContainer] = useAutoAnimate<HTMLDivElement>();
-
+  
   if (error) {
-    console.log(error);
+    console.error(error);
     return <div role="status">Si è verificato un errore</div>;
   }
 
   const showCategoriesCards = isLoading || (data?.Transactions.length || 0) > 0;
 
   return (
-    <>
-      <div
-        ref={firstRowContainer}
-        className="flex flex-col lg:flex-row lg:space-x-4"
-      >
+    <div>
+      <div className="flex flex-col lg:flex-row lg:space-x-4">
         <Resume />
         {showCategoriesCards && (
           <div className="flex flex-col sm:flex-row sm:space-x-4 lg:flex-col lg:space-x-0 lg:flex-[3_3_0%] 2xl:space-x-4 2xl:flex-row 2xl:flex-6">
@@ -108,11 +111,10 @@ const DashboardPage = () => {
 
         <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 lg:flex-3">
           {/* <CardTransazioni transazioni={transazioniDaMostrare} conti={wallets} categorie={categories} /> */}
-
           <LatestTransactions />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
@@ -236,7 +238,7 @@ const InOutSum: FC<{
             <path d="M413.1 222.5l22.2 22.2c9.4 9.4 9.4 24.6 0 33.9L241 473c-9.4 9.4-24.6 9.4-33.9 0L12.7 278.6c-9.4-9.4-9.4-24.6 0-33.9l22.2-22.2c9.5-9.5 25-9.3 34.3.4L184 343.4V56c0-13.3 10.7-24 24-24h32c13.3 0 24 10.7 24 24v287.4l114.8-120.5c9.3-9.8 24.8-10 34.3-.4z"></path>
           )}
         </svg>
-        {value ? (
+        {value !== undefined ? (
           <span className="flex-auto font-medium text-white">
             € {value.toFixed(2)}
           </span>
@@ -258,7 +260,7 @@ const Balance: FC<{
   investments?: number;
 }> = ({ cash, investments }) => (
   <div className="flex flex-col">
-    {cash ? (
+    {cash !== undefined ? (
       <span className="text-3xl font-bold text-white">€ {cash.toFixed(2)}</span>
     ) : (
       <span className="text-3xl rounded-xl bg-gray-700 w-32 animate-pulse">
@@ -266,7 +268,7 @@ const Balance: FC<{
       </span>
     )}
     <span className="text-sm font-medium text-gray-400 mb-3">in liquidità</span>
-    {investments ? (
+    {investments !== undefined ? (
       <span className="text-xl font-bold text-white">
         € {investments.toFixed(2)}
       </span>
@@ -381,10 +383,20 @@ const LatestTransactions: FC = () => {
             &nbsp;
           </span>
         )}
-        {!loading && error ? (
+
+        {!loading && error && (
           <span className="dark:text-white">Si è verificato un errore</span>
-        ) : (
+        )}
+
+        {!loading &&
+        !error &&
+        latestTransactions &&
+        latestTransactions?.length > 0 ? (
           latestTransactions?.map((t) => <Transaction key={t.id} element={t} />)
+        ) : (
+          <span className="text-center m-8 dark:text-white">
+            Non ci sono transazioni recenti
+          </span>
         )}
       </div>
     </Card>

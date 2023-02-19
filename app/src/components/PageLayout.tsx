@@ -1,13 +1,12 @@
 import { FC, PropsWithChildren } from "react";
 import Link from "next/link";
 import classnames from "classnames";
-import { atom, useAtomValue } from "jotai";
+import { atom } from "jotai";
 import { BsTag } from "react-icons/bs";
-import { FaPlus } from "react-icons/fa";
 import { HiOutlineChartPie } from "react-icons/hi";
 import { MdAttachMoney } from "react-icons/md";
 import { RiArrowLeftRightLine, RiDashboard2Line } from "react-icons/ri";
-import { Action, Fab } from "react-tiny-fab";
+import FabContainer from "./FabContainer";
 
 export const PageLayout: FC<PropsWithChildren<{ name: string }>> = (props) => {
   return (
@@ -27,7 +26,7 @@ export const PageLayout: FC<PropsWithChildren<{ name: string }>> = (props) => {
   );
 };
 
-interface FABAction {
+export type FABAction = {
   text: string;
   color: string;
   icon: JSX.Element;
@@ -35,7 +34,6 @@ interface FABAction {
 }
 
 export const fabsAtom = atom([] as FABAction[]);
-export const showFabAtom = atom(false);
 
 const pages = [
   {
@@ -65,45 +63,22 @@ const pages = [
   },
 ];
 
-const BottomNav: FC = () => {
-  const showFab = useAtomValue(showFabAtom);
-  const fabs = useAtomValue(fabsAtom);
-
-  const bottomNavContent = classnames({
-    "bottom-nav-content px-2 flex flex-row flex-grow relative w-full space-x-3 max-w-3xl":
-      true,
-    "with-fab justify-start md:justify-center": showFab,
-    "justify-center bg-white dark:bg-gray-900": !showFab,
-  });
-
+export const BottomNav: FC = () => {
   return (
-    <div className="bottom-nav flex-none flex flex-row h-14 z-40 fixed bottom-0 left-0 right-0">
-      <div className="spacer-1 flex-grow bg-gray-900"></div>
-      <div className={bottomNavContent}>
-        {pages.map((item, index) => (
-          <BottomNavItem key={index} {...item} />
-        ))}
-        {showFab && (
-          <>
-            <div className="w-24 md:hidden justify-self-end shrink-0"></div>
-            <Fab icon={<FaPlus />} event="click">
-              {fabs.map((item, index) => (
-                <Action
-                  key={index}
-                  text={item.text}
-                  style={{ backgroundColor: item.color }}
-                  onClick={item.onClick}
-                >
-                  {item.icon}
-                </Action>
-              ))}
-            </Fab>
-          </>
-        )}
+    <div className="flex-none flex flex-row z-40 fixed bottom-0 left-0 right-0">
+      <div
+        className="mx-auto h-20 container justify-between bg-white dark:bg-gray-900 bottom-nav-content px-2 flex flex-row flex-grow relative w-full space-x-3 max-w-3xl"
+        style={{ borderRadius: "12px 12px 0 0" }}
+      >
+        <div className="flex space-x-4">
+          {pages.map((item, index) => (
+            <BottomNavItem key={index} {...item} />
+          ))}
+        </div>
+        <FabContainer />
       </div>
-      <div className="spacer-2 flex-grow bg-gray-900"></div>
     </div>
-  );
+  )
 };
 
 const BottomNavItem: React.FC<{
@@ -115,7 +90,7 @@ const BottomNavItem: React.FC<{
   const active = path === page && path.length === page.length;
 
   const classes = classnames({
-    "h-full w-full flex flex-col space-y-1 justify-center hover:no-underline text-center":
+    "min-w-[32px] h-full flex flex-col space-y-1 justify-center hover:no-underline text-center":
       true,
     "text-white": active,
     "hover:text-green-600 text-gray-600 text-gray-500 hover:text-white":
@@ -123,13 +98,9 @@ const BottomNavItem: React.FC<{
   });
 
   return (
-    <Link href={page} className={classes}>
+    <Link href={page} className={classes} shallow>
       {icon}
-      <span
-        className={`font-normal text-xs ${
-          active ? "block" : "hidden"
-        } sm:block`}
-      >
+      <span className={`font-normal text-xs ${active ? "block" : "hidden"}`}>
         {name}
       </span>
     </Link>

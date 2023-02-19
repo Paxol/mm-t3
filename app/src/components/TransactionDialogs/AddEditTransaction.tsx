@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
+import { useAtom } from "jotai";
 import moment from "moment";
 import { TransactionWithJoins } from "@paxol/api/src/types";
 import { Category, Transaction, Wallet } from "@paxol/db";
@@ -8,55 +9,59 @@ import { api } from "~/utils/api";
 import { Button } from "../Button";
 import { Input } from "../Input";
 import { SearchableCombobox } from "../SearchableCombobox";
-import { useTansactionDialogContext } from "./context";
+import { dialogOpenAtom } from "./TansactionDialogContainer";
 
-export type EditTransactionDialogData = {
-  type: "EditTransaction";
-  mode: "add" | "modify";
-  transaction?: Transaction | TransactionWithJoins;
-};
+export type TransactionDialogData =
+  | {
+      type: "EditTransaction";
+      transaction: Transaction | TransactionWithJoins;
+    }
+  | {
+      type: "AddTransaction";
+      transaction?: Transaction | TransactionWithJoins;
+    };
 
 export interface FormType {
   type?: string;
   date?: string;
   time?: string;
   description?: string;
-  amount?: number;
+  amount?: string | number;
 }
 
-export const EditTransaction = () => {
-  const { data, close } = useTansactionDialogContext();
-  const [submitDisabled, setSubmitDisabled] = useState(false);
+export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
+  const [, setDialogOpen] = useAtom(dialogOpenAtom);
+
+  const createTx = api.transactions.create.useMutation();
+  const updateTx = api.transactions.update.useMutation();
 
   const apiContext = api.useContext();
   const categories = apiContext.categories.get.getData();
-  const wallets = apiContext.wallets.get.getData();
+  const wallets = apiContext.wallets.get
+    .getData()
+    ?.sort((a, b) => (b.name > a.name ? -1 : 1));
 
-  const defaultValues = {
-    wallet: wallets?.find(
-      (w) =>
-        w.id === (data.transaction?.walletId ?? data.transaction?.walletFromId),
-    ),
-    walletTo: wallets?.find((w) => w.id === data.transaction?.walletToId),
-    category: categories?.find((w) => w.id === data.transaction?.categoryId),
-    amount: data.transaction?.amount ?? 0,
-    date: moment(data.transaction?.date).format("YYYY-MM-DD"),
-    time: moment(data.transaction?.date).format("HH:mm"),
-    description: data.transaction?.description ?? "",
-    type: data.transaction?.type ?? "i",
-  };
+  const defaultValues = getTxDefaults(data, wallets, categories);
 
   const [wallet, setWallet] = useState<Wallet | undefined>(
-    defaultValues.wallet,
+    defaultValues?.wallet,
   );
   const [walletTo, setWalletTo] = useState<Wallet | undefined>(
-    defaultValues.walletTo,
+    defaultValues?.walletTo,
   );
   const [category, setCategory] = useState<Category | undefined>(
-    defaultValues.category,
+    defaultValues?.category,
   );
 
-  const [form, setForm, handleFormChange] = useForm<FormType>(defaultValues);
+  const [form, setForm, handleFormChange] = useForm<FormType>(
+    defaultValues || {
+      type: "i",
+      amount: 0,
+      date: moment().format("YYYY-MM-DD"),
+      time: moment().format("HH:mm"),
+      description: "",
+    },
+  );
 
   const walletToValues = useMemo(
     () => wallets?.filter((w) => !wallet || w.id != wallet.id),
@@ -64,20 +69,37 @@ export const EditTransaction = () => {
   );
 
   const handleSubmit = useCallback(() => {
-    setSubmitDisabled(true);
+    if (!data) return;
 
-    console.log({
-      ...form,
-      wallet: wallet?.id,
-      walletTo: walletTo?.id,
-      category: category?.id,
-    });
+    const values = {
+      amount: Number(form.amount),
+      date: moment(
+        `${form.date} ${form.time}`,
+        "YYYY/MM/DD HH:mm",
+      ).toISOString(),
+      description: form.description || "",
+      type: form.type as "i" | "o" | "t",
+      categoryId: category?.id ?? null,
+      walletId: wallet?.id ?? "",
+      walletToId: walletTo?.id ?? null,
+    };
 
-    close();
-    setSubmitDisabled(false);
-  }, [form, wallet, walletTo, category, close]);
+    if (data.type === "AddTransaction") createTx.mutate(values);
 
-  if (data.type != "EditTransaction") return null;
+    if (data.type === "EditTransaction")
+      updateTx.mutate({ ...values, id: data.transaction.id });
+
+    // setDialogOpen(false);
+  }, [form, wallet, walletTo, category, data, createTx, updateTx]);
+
+  useEffect(() => {
+    if (createTx.status === "success" || updateTx.status === "success") {
+      setDialogOpen(false);
+      apiContext.transactions.getRange.invalidate();
+    }
+  })
+
+  if (!data) return null;
 
   if (!categories || !wallets || !walletToValues) return null;
 
@@ -95,7 +117,10 @@ export const EditTransaction = () => {
         as="h3"
         className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
       >
-        {data.mode === "add" ? "Aggiungi transazione" : "Modifica transazione"}
+        {data.type === "AddTransaction"
+          ? "Aggiungi transazione"
+          : "Modifica transazione"}
+        {/* Modifica transazione */}
       </Dialog.Title>
       <div className="mt-2">
         {/* Type */}
@@ -213,26 +238,53 @@ export const EditTransaction = () => {
           <small className="text-black dark:text-white">Ammontare</small>
           <Input
             type="number"
+            min={0}
             step=".01"
             name="amount"
-            defaultValue={form.amount?.toFixed(2)}
+            defaultValue={form.amount}
             onChange={handleFormChange}
           />
         </div>
+
+        {(createTx.status === "error" || updateTx.status === "error") && (
+          <div className="dark:text-white">
+            <p>An error occurred, try again</p>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex justify-end items-center space-x-3">
         <Button
           color="primary"
-          disabled={submitDisabled}
+          disabled={createTx.status === "loading" && updateTx.status === "loading"}
           onClick={handleSubmit}
         >
-          {data.mode === "add" ? "Aggiungi" : "Modifica"}
+          {data.type === "AddTransaction" ? "Aggiungi" : "Modifica"}
+          {/* Modifica */}
         </Button>
       </div>
     </>
   );
 };
+
+function getTxDefaults(
+  data: TransactionDialogData | null,
+  wallets: Wallet[] | undefined,
+  categories: Category[] | undefined,
+) {
+  if (!data || data.type !== "EditTransaction") return null;
+
+  return {
+    wallet: wallets?.find((w) => w.id === data.transaction.walletId),
+    walletTo: wallets?.find((w) => w.id === data.transaction.walletToId),
+    category: categories?.find((w) => w.id === data.transaction.categoryId),
+    amount: data.transaction.amount ?? 0,
+    date: moment(data.transaction.date).format("YYYY-MM-DD"),
+    time: moment(data.transaction.date).format("HH:mm"),
+    description: data.transaction.description ?? "",
+    type: data.transaction.type ?? "i",
+  };
+}
 
 function useForm<T = { [key: string]: string }>(
   defaultState: T,

@@ -1,11 +1,32 @@
 import React, { Fragment } from "react";
 import { Dialog as HeadlessUIDialog, Transition } from "@headlessui/react";
+import { atom, useAtom, useAtomValue } from "jotai";
 
-import { EditTransaction } from "./EditTransaction";
-import { useTansactionDialogContext } from "./context";
+import { AddEditTransaction, TransactionDialogData } from "./AddEditTransaction";
+import { DeleteTransaction, DeleteTransactionData } from "./DeleteTransaction";
+
+type DialogData = TransactionDialogData | DeleteTransactionData;
+
+export const dialogOpenAtom = atom(false);
+const dialogDataAtom = atom<DialogData | null>(null);
+
+export const dialogActionAtom = atom(
+  (get) => get(dialogDataAtom),
+  (_, set, args: ["close"] | ["open", DialogData]) => {
+    if (args[0] === "close") {
+      set(dialogOpenAtom, false);
+      set(dialogDataAtom, null);
+      return;
+    }
+
+    set(dialogDataAtom, args[1]);
+    set(dialogOpenAtom, true);
+  },
+);
 
 export const TansactionDialogContainer = () => {
-  const { isOpen, close, data } = useTansactionDialogContext();
+  const [isOpen, setIsOpen] = useAtom(dialogOpenAtom);
+  const data = useAtomValue(dialogDataAtom);
 
   return (
     <Transition show={isOpen} as={Fragment}>
@@ -14,7 +35,7 @@ export const TansactionDialogContainer = () => {
         className="fixed inset-0 z-50 overflow-y-auto"
         static
         open={isOpen}
-        onClose={close}
+        onClose={() => setIsOpen(false)}
       >
         <div className="min-h-screen px-4 text-center">
           <Transition.Child
@@ -49,7 +70,9 @@ export const TansactionDialogContainer = () => {
             leaveTo="opacity-0 scale-95"
           >
             <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-2xl">
-              {data?.type === "EditTransaction" && <EditTransaction />}
+              {data?.type === "AddTransaction" && <AddEditTransaction {...data} />}
+              {data?.type === "EditTransaction" && <AddEditTransaction {...data} />}
+              {data?.type === "DeleteTransaction" && <DeleteTransaction {...data} />}
             </div>
           </Transition.Child>
         </div>

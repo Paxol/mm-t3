@@ -48,13 +48,11 @@ export const dashboardRouter = createTRPCRouter({
           future: true,
           categoryId: true,
           walletId: true,
-          walletFromId: true,
           walletToId: true,
           userid: true,
 
           category: true,
           wallet: true,
-          walletFrom: true,
           walletTo: true,
         },
         where: {

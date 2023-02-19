@@ -5,3 +5,23 @@
 html {
   overflow-y: overlay;
 }
+
+.rtf--mb__c > ul {
+  bottom: 68px;
+  position: relative;
+}
+
+.rtf--ab__c button {
+  border-radius: 12px;
+}
+
+.rtf--mb {
+  border-radius: 16px!important;
+}
+
+.rtf {
+  margin: 0!important;
+  position: absolute!important;
+  right: 12px!important;
+  bottom: 12px!important;
+}

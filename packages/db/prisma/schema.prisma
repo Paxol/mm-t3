@@ -16,16 +16,14 @@ model SavedTransaction {
   description  String
   type         String
   categoryId   String?
-  walletId     String?
-  walletFromId String?
+  walletId     String
   walletToId   String?
   userid       String
 
-  user       User      @relation(fields: [userid], references: [id], onDelete: Cascade)
-  category   Category? @relation(fields: [categoryId], references: [id])
-  wallet     Wallet?   @relation("st-w-w", fields: [walletId], references: [id])
-  walletFrom Wallet?   @relation("st-w-wf", fields: [walletFromId], references: [id])
-  walletTo   Wallet?   @relation("st-w-wt", fields: [walletToId], references: [id])
+  user     User      @relation(fields: [userid], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id])
+  wallet   Wallet   @relation("st-w-w", fields: [walletId], references: [id])
+  walletTo Wallet?   @relation("st-w-wt", fields: [walletToId], references: [id])
 }
 
 model Transaction {
@@ -36,16 +34,14 @@ model Transaction {
   type         String
   future       Boolean  @default(false)
   categoryId   String?
-  walletId     String?
-  walletFromId String?
+  walletId     String
   walletToId   String?
   userid       String
 
-  user       User      @relation(fields: [userid], references: [id], onDelete: Cascade)
-  category   Category? @relation(fields: [categoryId], references: [id])
-  wallet     Wallet?   @relation("t-w-w", fields: [walletId], references: [id])
-  walletFrom Wallet?   @relation("t-w-wf", fields: [walletFromId], references: [id])
-  walletTo   Wallet?   @relation("t-w-wt", fields: [walletToId], references: [id])
+  user     User      @relation(fields: [userid], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id])
+  wallet   Wallet   @relation("t-w-w", fields: [walletId], references: [id])
+  walletTo Wallet?   @relation("t-w-wt", fields: [walletToId], references: [id])
 }
 
 model Category {
@@ -74,14 +70,12 @@ model Wallet {
 
   oldId String?
 
-  user                        User               @relation(fields: [userid], references: [id], onDelete: Cascade)
-  SavedTransaction_wallet     SavedTransaction[] @relation("st-w-w")
-  SavedTransaction_walletFrom SavedTransaction[] @relation("st-w-wf")
-  SavedTransaction_walletTo   SavedTransaction[] @relation("st-w-wt")
+  user                      User               @relation(fields: [userid], references: [id], onDelete: Cascade)
+  SavedTransaction_wallet   SavedTransaction[] @relation("st-w-w")
+  SavedTransaction_walletTo SavedTransaction[] @relation("st-w-wt")
 
-  Transaction_wallet     Transaction[] @relation("t-w-w")
-  Transaction_walletFrom Transaction[] @relation("t-w-wf")
-  Transaction_walletTo   Transaction[] @relation("t-w-wt")
+  Transaction_wallet   Transaction[] @relation("t-w-w")
+  Transaction_walletTo Transaction[] @relation("t-w-wt")
 }
 
 // Necessary for Next auth

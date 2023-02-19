@@ -3,7 +3,7 @@ import backup from "./backup.json";
 
 const prisma = new PrismaClient();
 
-const userid = "cldpx2vxa0000v2u8k0kq1hpu";
+const userid = "cle9pio4f0000vhmeo3iew039";
 
 const restoreCategories = true;
 const restoreWallets = true;
@@ -96,12 +96,12 @@ async function createTransactions(transactions: [string, BackupTransaction][], c
       type: tx.type,
 
       categoryId: categoriesMapping.get(tx.category) || undefined,
-      walletId: tx.wallet && walletMapping.get(tx.wallet),
-      walletFromId: tx.wallet_from && walletMapping.get(tx.wallet_from),
+      walletId: tx.type !== 't' ? tx.wallet && walletMapping.get(tx.wallet) : tx.wallet_from && walletMapping.get(tx.wallet_from),
       walletToId: tx.wallet_to && walletMapping.get(tx.wallet_to),
     }
   })
 
+  // @ts-ignore
   await prisma.transaction.createMany({ data });
 }
 
@@ -115,12 +115,12 @@ async function createSavedTransactions(saved_transactions: [string, BackupSavedT
       type: tx.type,
 
       categoryId: categoriesMapping.get(tx.category) || undefined,
-      walletId: tx.wallet && walletMapping.get(tx.wallet),
-      walletFromId: tx.wallet_from && walletMapping.get(tx.wallet_from),
+      walletId: (tx.wallet && walletMapping.get(tx.wallet)) ?? (tx.wallet_from && walletMapping.get(tx.wallet_from)),
       walletToId: tx.wallet_to && walletMapping.get(tx.wallet_to),
     }
   })
 
+  // @ts-ignore
   await prisma.savedTransaction.createMany({ data });
 }
 

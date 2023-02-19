@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+import { create } from "../handlers/transactions/create";
+import { deleteFn } from "../handlers/transactions/delete";
+import { update } from "../handlers/transactions/update";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TransactionWithJoins } from "../types";
 
@@ -22,13 +25,11 @@ export const transactionsRouter = createTRPCRouter({
           future: true,
           categoryId: true,
           walletId: true,
-          walletFromId: true,
           walletToId: true,
           userid: true,
 
           category: true,
           wallet: true,
-          walletFrom: true,
           walletTo: true,
         },
         where: {
@@ -49,4 +50,35 @@ export const transactionsRouter = createTRPCRouter({
         },
       });
     }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        amount: z.number(),
+        date: z.string().datetime(),
+        description: z.string(),
+        type: z.enum(["i", "o", "t"]),
+        categoryId: z.string().nullable(),
+        walletId: z.string(),
+        walletToId: z.string().nullable(),
+      }),
+    )
+    .mutation(update),
+
+  create: protectedProcedure
+    .input(
+      z.object({
+        amount: z.number(),
+        date: z.string().datetime(),
+        description: z.string(),
+        type: z.enum(["i", "o", "t"]),
+        categoryId: z.string().nullable(),
+        walletId: z.string(),
+        walletToId: z.string().nullable(),
+      }),
+    )
+    .mutation(create),
+
+  delete: protectedProcedure.input(z.string()).mutation(deleteFn),
 });
