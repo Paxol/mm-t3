@@ -16,12 +16,30 @@ html {
 }
 
 .rtf--mb {
-  border-radius: 16px!important;
+  border-radius: 16px !important;
 }
 
 .rtf {
-  margin: 0!important;
-  position: absolute!important;
-  right: 12px!important;
-  bottom: 12px!important;
+  margin: 0 !important;
+  position: absolute !important;
+  right: 12px !important;
+  bottom: 12px !important;
+}
+
+input:checked + svg {
+  display: block;
+}
+
+.dpw input {
+  background: transparent;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }

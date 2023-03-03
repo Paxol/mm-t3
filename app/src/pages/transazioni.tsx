@@ -2,15 +2,19 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { useAtom } from "jotai";
+import { atom, useAtom, useAtomValue } from "jotai";
 import moment from "moment";
 import { useSession } from "next-auth/react";
+import { BsFilter } from "react-icons/bs";
 import { RiArrowLeftRightLine } from "react-icons/ri";
+import Datepicker from "react-tailwindcss-datepicker";
 import { TransactionWithJoins } from "@paxol/api/src/types";
 
 import { api } from "~/utils/api";
 import { Card } from "~/components/Card";
+import { Checkbox } from "~/components/Checkbox";
 import { fabAtom } from "~/components/FabContainer";
+import { Input } from "~/components/Input";
 import { LoginPage } from "~/components/LoginPage";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
@@ -44,6 +48,55 @@ function getDailyTransactionsArray(
   });
 
   return [...map].sort(([a], [b]) => (b > a ? 1 : -1));
+}
+
+function applyFilters(
+  txs: TransactionWithJoins[] | undefined,
+  filters: Filters,
+) {
+  return txs?.filter((t) => {
+    const date = t.date.toISOString();
+    if (
+      date < (filters.startDate?.toISOString() ?? "") ||
+      date > (filters.endDate?.toISOString() ?? "")
+    )
+      return false;
+
+    if (
+      filters.wallets &&
+      (filters.wallets.size === 0 || filters.wallets.has(t.walletId ?? ""))
+    )
+      return false;
+    if (
+      t.walletToId &&
+      filters.wallets &&
+      (filters.wallets.size === 0 || filters.wallets?.has(t.walletToId))
+    )
+      return false;
+
+    if (t.type === "t" && filters.transfer !== undefined) return false;
+    if (
+      t.type === "i" &&
+      t.categoryId &&
+      filters.categoriesIn?.has(t.categoryId)
+    )
+      return false;
+    if (
+      t.type === "o" &&
+      t.categoryId &&
+      filters.categoriesOut?.has(t.categoryId)
+    )
+      return false;
+
+    if (filters.text != "") {
+      const txt = `${t.description} ${t.amount} ${t.wallet?.name ?? ""}  ${
+        t.walletTo?.name ?? ""
+      } ${t.category?.name}`.toLocaleLowerCase();
+      if (!txt.includes(filters.text.toLocaleLowerCase())) return false;
+    }
+
+    return true;
+  });
 }
 
 const Transactions: NextPage = () => {
@@ -82,16 +135,16 @@ const Transactions: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="bg-gray-700">
-        {!data ? (
-          <LoginPage />
-        ) : (
-          <PageLayout name="Tansazioni">
-            <TansactionDialogContainer />
-            <TransactionsPage />
-          </PageLayout>
-        )}
-      </div>
+      {!data ? (
+        <LoginPage />
+      ) : (
+        <PageLayout name="Tansazioni">
+          <TansactionDialogContainer />
+
+          <Filters />
+          <TransactionsPage />
+        </PageLayout>
+      )}
     </>
   );
 };
@@ -99,8 +152,8 @@ const Transactions: NextPage = () => {
 export default Transactions;
 
 const TransactionsPage = () => {
-  const from = moment().startOf("month").toISOString();
-  const to = moment().endOf("month").toISOString();
+  const { from, to } = useAtomValue(dateRangeAtom);
+  const filters = useAtomValue(filtersAtom);
 
   const transactionQuery = api.transactions.getRange.useQuery({ from, to });
   const categoriesQuery = api.categories.get.useQuery();
@@ -115,8 +168,9 @@ const TransactionsPage = () => {
     transactionQuery.error || categoriesQuery.error || walletsQuery.error;
 
   const dailyTransactions = useMemo(
-    () => getDailyTransactionsArray(transactionQuery.data),
-    [transactionQuery.data],
+    () =>
+      getDailyTransactionsArray(applyFilters(transactionQuery.data, filters)),
+    [transactionQuery.data, filters],
   );
 
   if (isLoading) return <span>Loading</span>;
@@ -206,6 +260,267 @@ const DailyTransactions: FC<{
               showTrash
             />
           ))}
+      </div>
+    </div>
+  );
+};
+
+type Unchecked = {
+  wallets: Set<string> | undefined;
+  categoriesIn: Set<string> | undefined;
+  categoriesOut: Set<string> | undefined;
+  transfer: Set<string> | undefined;
+};
+
+type Filters = {
+  startDate: Date | null;
+  endDate: Date | null;
+  text: string;
+} & Unchecked;
+
+const defaultStartDate = moment().startOf("month").toDate();
+const defaultEndDate = moment().endOf("month").toDate();
+
+const dateRangeAtom = atom({
+  from: defaultStartDate.toISOString(),
+  to: defaultStartDate.toISOString(),
+});
+
+const filtersAtom = atom<Filters>({
+  startDate: defaultStartDate,
+  endDate: defaultEndDate,
+  text: "",
+
+  wallets: undefined,
+  categoriesIn: undefined,
+  categoriesOut: undefined,
+  transfer: undefined,
+});
+
+const Filters = () => {
+  const ctx = api.useContext();
+  const [filters, setFilters] = useAtom(filtersAtom);
+  const [, setDateRange] = useAtom(dateRangeAtom);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    if (filters.startDate && filters.endDate) {
+      setDateRange({
+        from: filters.startDate.toISOString(),
+        to: filters.endDate.toISOString(),
+      });
+
+      ctx.transactions.getRange.invalidate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.startDate, filters.endDate]);
+
+  const [ref] = useAutoAnimate();
+
+  return (
+    <Card className="mb-4">
+      <div className="flex space-x-4">
+        <div className="flex-1 dpw">
+          <Datepicker
+            useRange={false}
+            value={filters}
+            i18n="it"
+            separator="→"
+            inputClassName="dark:text-white font-normal"
+            toggleClassName="dark:text-white"
+            displayFormat="DD/MM/YYYY"
+            onChange={(v) => {
+              const startDate = v?.startDate ? new Date(v.startDate) : null;
+              const endDate = v?.endDate ? new Date(v.endDate) : null;
+
+              setFilters((f) => ({ ...f, startDate, endDate }));
+            }}
+          />
+        </div>
+        <button className="flex-none" onClick={() => setShowAll(!showAll)}>
+          <BsFilter className="text-white w-5 h-5" />
+        </button>
+      </div>
+
+      <div ref={ref}>{showAll && <AdvancedFilters />}</div>
+    </Card>
+  );
+};
+
+const AdvancedFilters = () => {
+  const [filters, setFilters] = useAtom(filtersAtom);
+  const ctx = api.useContext();
+
+  const wallets = ctx.wallets.get
+    .getData()
+    ?.map((w) => ({ id: w.id, label: w.name }));
+
+  const categoriesIn = ctx.categories.get
+    .getData()
+    ?.filter((c) => c.type === "in")
+    .map((c) => ({ id: c.id, label: c.name }));
+  const categoriesOut = ctx.categories.get
+    .getData()
+    ?.filter((c) => c.type === "out")
+    .map((c) => ({ id: c.id, label: c.name }));
+
+  if (!wallets || !categoriesIn || !categoriesOut) return null;
+
+  return (
+    <div className="flex flex-col space-y-4">
+      <div className="-mb-2">
+        <div className="font-medium capitalize dark:text-white mb-2">Testo</div>
+
+        <div className="relative">
+          <Input
+            type="text"
+            placeholder="Cerca nel contenuto"
+            value={filters.text}
+            onValueChange={(value) =>
+              setFilters((f) => ({ ...f, text: value }))
+            }
+          />
+        </div>
+      </div>
+
+      <div>
+        <div className="font-medium capitalize dark:text-white mb-2">Conti</div>
+
+        <CheckboxGroup
+          elements={wallets}
+          masterLabel="Tutti i conti"
+          type="wallets"
+        />
+      </div>
+
+      <div>
+        <div className="font-medium capitalize dark:text-white mb-2">
+          Categorie
+        </div>
+
+        <CheckboxGroup
+          elements={categoriesIn}
+          masterLabel="Tutti le entrate"
+          type="categoriesIn"
+        />
+
+        <div className="mb-4"></div>
+        <CheckboxGroup
+          elements={categoriesOut}
+          masterLabel="Tutti le uscite"
+          type="categoriesOut"
+        />
+
+        <div className="mb-4"></div>
+        <CheckboxGroup
+          elements={[]}
+          masterLabel="Tutti i trasferimenti"
+          type="transfer"
+        />
+      </div>
+    </div>
+  );
+};
+
+type Args =
+  | {
+      action: "ToggleMaster";
+      set: keyof Unchecked;
+    }
+  | {
+      action: "Toggle";
+      set: keyof Unchecked;
+      id: string;
+      elements: string[];
+    };
+
+const checkboxesAtom = atom(null, (get, set, args: Args) => {
+  if (args.action === "ToggleMaster") {
+    set(filtersAtom, (f) => ({
+      ...f,
+      [args.set]: f[args.set] ? undefined : new Set<string>(),
+    }));
+    return;
+  }
+
+  let current = get(filtersAtom)[args.set];
+
+  if (!current) {
+    set(filtersAtom, (f) => ({ ...f, [args.set]: new Set([args.id]) }));
+    return;
+  }
+
+  if (current.size === 0) current = new Set(args.elements);
+
+  if (current.has(args.id)) current.delete(args.id);
+  else current.add(args.id);
+
+  set(filtersAtom, (f) => ({
+    ...f,
+    [args.set]: current?.size === 0 ? undefined : current,
+  }));
+});
+
+interface ICheckbox {
+  id: string;
+  label: string;
+}
+
+type CheckboxGroupProps = {
+  elements: ICheckbox[];
+  masterLabel: string;
+  type: Args["set"];
+};
+
+const CheckboxGroup: FC<CheckboxGroupProps> = ({
+  elements,
+  masterLabel,
+  type,
+}) => {
+  const filters = useAtomValue(filtersAtom);
+  const [, set] = useAtom(checkboxesAtom);
+
+  const excludedCheckboxes = filters[type];
+
+  const masterChecked = !excludedCheckboxes;
+
+  return (
+    <div className="cbgroup">
+      <Checkbox
+        checked={masterChecked}
+        onChange={() =>
+          set({
+            action: "ToggleMaster",
+            set: type,
+          })
+        }
+      >
+        {masterLabel}
+      </Checkbox>
+      <div className="ml-3">
+        {elements.map(({ id, label }) => {
+          const blacklisted = excludedCheckboxes
+            ? excludedCheckboxes.size === 0 || excludedCheckboxes.has(id)
+            : false;
+
+          return (
+            <div key={id} className="mt-1 lg:mt-0">
+              <Checkbox
+                checked={!blacklisted}
+                onChange={() =>
+                  set({
+                    elements: elements.map((e) => e.id),
+                    action: "Toggle",
+                    set: type,
+                    id,
+                  })
+                }
+              >
+                {label}
+              </Checkbox>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

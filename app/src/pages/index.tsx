@@ -71,15 +71,13 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="bg-gray-700">
-        {!data ? (
-          <LoginPage />
-        ) : (
-          <PageLayout name="Dashboard">
-            <DashboardPage />
-          </PageLayout>
-        )}
-      </div>
+      {!data ? (
+        <LoginPage />
+      ) : (
+        <PageLayout name="Dashboard">
+          <DashboardPage />
+        </PageLayout>
+      )}
     </>
   );
 };
