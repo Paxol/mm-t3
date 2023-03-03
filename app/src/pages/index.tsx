@@ -9,10 +9,14 @@ import { useSession } from "next-auth/react";
 import { RiMoneyEuroCircleLine } from "react-icons/ri";
 
 import { api } from "~/utils/api";
-import { fabVisibleAtom } from "~/components/FabContainer";
+import { fabAtom } from "~/components/FabContainer";
 import { LoginPage } from "~/components/LoginPage";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
+import {
+  TansactionDialogContainer,
+  dialogActionAtom,
+} from "~/components/TransactionDialogs/TansactionDialogContainer";
 import { Card } from "../components/Card";
 
 type TransactionWithCategory = {
@@ -55,11 +59,9 @@ function sumWalletsBalances(wallets: Wallet[]): [number, number] {
 
 const Home: NextPage = () => {
   const { data } = useSession();
-  const [, setFabVisible] = useAtom(fabVisibleAtom);
+  const query = api.dashboard.transactions.useQuery();
 
-  useEffect(() => {
-    setFabVisible(false);
-  }, [setFabVisible]);
+  console.log("Home query:", query);
 
   return (
     <>
@@ -85,17 +87,42 @@ const Home: NextPage = () => {
 export default Home;
 
 const DashboardPage = () => {
-  const { isLoading, data, error } = api.dashboard.data.useQuery();
-  
+  const [dashboard, categories, wallets] = api.useQueries((t) => [
+    t.dashboard.transactions(),
+    t.categories.get(),
+    t.wallets.get(),
+  ]);
+
+  const [, setFab] = useAtom(fabAtom);
+  const [, setDialogData] = useAtom(dialogActionAtom);
+
+  const isLoading =
+    dashboard.isLoading || categories.isLoading || wallets.isLoading;
+
+  const error = dashboard.error ?? categories.error ?? wallets.error;
+
+  useEffect(() => {
+    if (isLoading || !categories.data || !wallets.data) return;
+
+    if (categories.data.length > 0 && wallets.data.length > 0) {
+      setFab({
+        type: "simple",
+        onClick: () => setDialogData(["open", { type: "AddTransaction" }]),
+      });
+    }
+  }, [isLoading, categories.data, wallets.data, setFab, setDialogData]);
+
   if (error) {
     console.error(error);
     return <div role="status">Si è verificato un errore</div>;
   }
 
-  const showCategoriesCards = isLoading || (data?.Transactions.length || 0) > 0;
+  const showCategoriesCards = isLoading || (dashboard.data?.length || 0) > 0;
 
   return (
     <div>
+      <TansactionDialogContainer />
+
       <div className="flex flex-col lg:flex-row lg:space-x-4">
         <Resume />
         {showCategoriesCards && (
@@ -110,7 +137,6 @@ const DashboardPage = () => {
         {/* <CardGrafico transazioni={transazioni} conti={wallets} /> */}
 
         <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 lg:flex-3">
-          {/* <CardTransazioni transazioni={transazioniDaMostrare} conti={wallets} categorie={categories} /> */}
           <LatestTransactions />
         </div>
       </div>
@@ -120,23 +146,25 @@ const DashboardPage = () => {
 
 const Resume = () => {
   const ctx = api.useContext();
-  const data = ctx.dashboard.data.getData();
+  const transactions = ctx.dashboard.transactions.getData();
+  const wallets = ctx.wallets.get.getData();
+
   const [infoContainer] = useAutoAnimate<HTMLDivElement>();
 
   const [earnings, expenses] = useMemo(() => {
-    if (!data || !data.Transactions) return [undefined, undefined];
+    if (!transactions) return [undefined, undefined];
 
-    return getMonthEarningAndExpenses(data.Transactions);
-  }, [data]);
+    return getMonthEarningAndExpenses(transactions);
+  }, [transactions]);
 
   const [cash, investments] = useMemo(() => {
-    if (!data || !data.Wallets) return [undefined, undefined];
+    if (!transactions || !wallets) return [undefined, undefined];
 
-    return sumWalletsBalances(data.Wallets);
-  }, [data]);
+    return sumWalletsBalances(wallets);
+  }, [transactions, wallets]);
 
-  const isLoading = data === undefined;
-  const hasWallets = (data?.Wallets.length || 0) > 0;
+  const isLoading = transactions === undefined;
+  const hasWallets = (wallets?.length || 0) > 0;
 
   const showNoWalletMessage = !isLoading && !hasWallets;
 
@@ -170,33 +198,37 @@ const Resume = () => {
 
       {!showNoWalletMessage && (
         <div className="flex flex-col justify-center mt-2 pt-2 sm:mt-0 sm:p-0 w-full">
-          {data ? (
+          {transactions ? (
             <>
               <span className="text-md text-gray-300 mb-1">Conti</span>
 
               <div className="mb-1">
-                {data?.Wallets.filter((w) => w.type === 0).map((w) => (
-                  <div
-                    key={w.id}
-                    className="select-none inline-flex flex-col bg-gray-700 text-white rounded-md py-2 px-4 mr-1 mb-1"
-                  >
-                    <span className="font-medium">{w.name}</span>€{" "}
-                    {w.currentValue.toFixed(2)}
-                  </div>
-                ))}
+                {wallets
+                  ?.filter((w) => w.type === 0)
+                  .map((w) => (
+                    <div
+                      key={w.id}
+                      className="select-none inline-flex flex-col bg-gray-700 text-white rounded-md py-2 px-4 mr-1 mb-1"
+                    >
+                      <span className="font-medium">{w.name}</span>€{" "}
+                      {w.currentValue.toFixed(2)}
+                    </div>
+                  ))}
               </div>
 
               <span className="text-md text-gray-300 mb-1">Investimenti</span>
               <div className="">
-                {data?.Wallets.filter((w) => w.type === 1).map((w) => (
-                  <div
-                    key={w.id}
-                    className="select-none inline-flex flex-col bg-gray-700 text-white rounded-md py-2 px-4 mr-1 mb-1"
-                  >
-                    <span className="font-medium">{w.name}</span>€{" "}
-                    {w.currentValue.toFixed(2)}
-                  </div>
-                ))}
+                {wallets
+                  ?.filter((w) => w.type === 1)
+                  .map((w) => (
+                    <div
+                      key={w.id}
+                      className="select-none inline-flex flex-col bg-gray-700 text-white rounded-md py-2 px-4 mr-1 mb-1"
+                    >
+                      <span className="font-medium">{w.name}</span>€{" "}
+                      {w.currentValue.toFixed(2)}
+                    </div>
+                  ))}
               </div>
             </>
           ) : (
@@ -283,7 +315,7 @@ const Balance: FC<{
 
 const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
   const ctx = api.useContext();
-  const data = ctx.dashboard.data.getData();
+  const transactions = ctx.dashboard.transactions.getData();
 
   const categories = useMemo(() => {
     const categoriesMap = new Map<
@@ -294,8 +326,8 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
       }
     >();
 
-    if (data) {
-      data.Transactions.forEach((t) => {
+    if (transactions) {
+      transactions.forEach((t) => {
         if (!t.category || t.category.type !== type) return;
 
         if (categoriesMap.has(t.category.id.toString())) {
@@ -317,7 +349,7 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
     return [...categoriesMap.values()]
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 3);
-  }, [data, type]);
+  }, [transactions, type]);
 
   return (
     <Card className="flex-1 mb-4">
@@ -358,9 +390,6 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
 };
 
 const LatestTransactions: FC = () => {
-  const ctx = api.useContext();
-  const dashboardData = ctx.dashboard.data.getData();
-
   const {
     data: latestTransactions,
     isLoading,
@@ -369,7 +398,13 @@ const LatestTransactions: FC = () => {
 
   const [ref] = useAutoAnimate<HTMLDivElement>();
 
-  const loading = !dashboardData || isLoading;
+  const showLoading = isLoading;
+  const showError = !showLoading && !!error;
+  const showTxs =
+    !showLoading &&
+    !showError &&
+    latestTransactions &&
+    latestTransactions.length > 0;
 
   return (
     <Card className="flex-1 mb-4">
@@ -378,26 +413,25 @@ const LatestTransactions: FC = () => {
       </div>
 
       <div ref={ref} className="flex flex-col">
-        {loading && (
-          <span className="bg-gray-700 w-full h-[359px] animate-pulse">
+        {showLoading && (
+          <span className="bg-gray-700 min-w-[285px] w-full h-[359px] animate-pulse">
             &nbsp;
           </span>
         )}
 
-        {!loading && error && (
+        {showError && (
           <span className="dark:text-white">Si è verificato un errore</span>
         )}
 
-        {!loading &&
-        !error &&
-        latestTransactions &&
-        latestTransactions?.length > 0 ? (
-          latestTransactions?.map((t) => <Transaction key={t.id} element={t} />)
-        ) : (
-          <span className="text-center m-8 dark:text-white">
-            Non ci sono transazioni recenti
-          </span>
-        )}
+        {showTxs
+          ? latestTransactions.map((t) => (
+              <Transaction key={t.id} element={t} />
+            ))
+          : !showLoading && (
+              <span className="text-center m-8 dark:text-white">
+                Non ci sono transazioni recenti
+              </span>
+            )}
       </div>
     </Card>
   );

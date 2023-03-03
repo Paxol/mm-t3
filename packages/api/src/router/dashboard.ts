@@ -4,14 +4,9 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TransactionWithJoins } from "../types";
 
 export const dashboardRouter = createTRPCRouter({
-  data: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.prisma.user.findFirstOrThrow({
+  transactions: protectedProcedure.query(async ({ ctx }) => {
+    const data = await ctx.prisma.user.findFirstOrThrow({
       select: {
-        Wallets: {
-          where: {
-            deleted: false,
-          },
-        },
         Transactions: {
           select: {
             id: true,
@@ -26,6 +21,7 @@ export const dashboardRouter = createTRPCRouter({
           where: {
             date: {
               gte: moment().subtract(1, "months").toDate(),
+              lte: moment().toDate(),
             },
           },
         },
@@ -34,6 +30,8 @@ export const dashboardRouter = createTRPCRouter({
         id: ctx.session.user.id,
       },
     });
+
+    return data.Transactions;
   }),
 
   latestTransactions: protectedProcedure.query(

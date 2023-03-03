@@ -10,9 +10,9 @@ import { TransactionWithJoins } from "@paxol/api/src/types";
 
 import { api } from "~/utils/api";
 import { Card } from "~/components/Card";
-import { fabVisibleAtom } from "~/components/FabContainer";
+import { fabAtom } from "~/components/FabContainer";
 import { LoginPage } from "~/components/LoginPage";
-import { PageLayout, fabsAtom } from "~/components/PageLayout";
+import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
 import {
   TansactionDialogContainer,
@@ -48,32 +48,31 @@ function getDailyTransactionsArray(
 
 const Transactions: NextPage = () => {
   const { data } = useSession();
-  const [, setFabs] = useAtom(fabsAtom);
-  const [, setFabVisible] = useAtom(fabVisibleAtom);
+  const [, setFab] = useAtom(fabAtom);
 
   const [, setDialogData] = useAtom(dialogActionAtom);
 
   useEffect(() => {
-    setFabs([
-      {
-        text: "Transazione generica",
-        color: "rgb(156, 163, 175)",
-        icon: (
-          <RiArrowLeftRightLine style={{ width: "1.25em", height: "1.25em" }} />
-        ),
-        onClick: () => setDialogData(["open", { type: "AddTransaction" }]),
-      },
-    ]);
-  }, [setDialogData, setFabs]);
+    setFab({
+      type: "withMenu",
+      actions: [
+        {
+          text: "Transazione generica",
+          color: "rgb(156, 163, 175)",
+          icon: (
+            <RiArrowLeftRightLine
+              style={{ width: "1.25em", height: "1.25em" }}
+            />
+          ),
+          onClick: () => setDialogData(["open", { type: "AddTransaction" }]),
+        },
+      ],
+    });
 
-  useEffect(() => {
-    setFabVisible(true);
-
-    // setFabs();
     return () => {
-      setFabs([]);
+      setFab({ type: "none" });
     };
-  }, [setFabVisible, setFabs]);
+  }, [setDialogData, setFab]);
 
   return (
     <>
@@ -115,7 +114,10 @@ const TransactionsPage = () => {
   const error =
     transactionQuery.error || categoriesQuery.error || walletsQuery.error;
 
-  const dailyTransactions = useMemo(() => getDailyTransactionsArray(transactionQuery.data), [transactionQuery.data]);
+  const dailyTransactions = useMemo(
+    () => getDailyTransactionsArray(transactionQuery.data),
+    [transactionQuery.data],
+  );
 
   if (isLoading) return <span>Loading</span>;
   if (error) {
@@ -127,7 +129,11 @@ const TransactionsPage = () => {
     <Card>
       {dailyTransactions?.map(([date, t]) => (
         <DailyTransactions key={date} date={date} transactions={t} />
-      )) ?? <span className="text-center dark:text-white">Nessuna transazione trovata</span>}
+      )) ?? (
+        <span className="text-center dark:text-white">
+          Nessuna transazione trovata
+        </span>
+      )}
     </Card>
   );
 };

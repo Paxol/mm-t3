@@ -1,12 +1,13 @@
 import { FC, PropsWithChildren } from "react";
 import Link from "next/link";
 import classnames from "classnames";
-import { atom } from "jotai";
+import { useAtomValue } from "jotai";
 import { BsTag } from "react-icons/bs";
 import { HiOutlineChartPie } from "react-icons/hi";
 import { MdAttachMoney } from "react-icons/md";
 import { RiArrowLeftRightLine, RiDashboard2Line } from "react-icons/ri";
-import FabContainer from "./FabContainer";
+
+import FabContainer, { fabVisibleAtom } from "./FabContainer";
 
 export const PageLayout: FC<PropsWithChildren<{ name: string }>> = (props) => {
   return (
@@ -25,15 +26,6 @@ export const PageLayout: FC<PropsWithChildren<{ name: string }>> = (props) => {
     </main>
   );
 };
-
-export type FABAction = {
-  text: string;
-  color: string;
-  icon: JSX.Element;
-  onClick?: () => void;
-}
-
-export const fabsAtom = atom([] as FABAction[]);
 
 const pages = [
   {
@@ -64,10 +56,14 @@ const pages = [
 ];
 
 export const BottomNav: FC = () => {
+  const fabVisible = useAtomValue(fabVisibleAtom);
+
+  const width = fabVisible ? "px-2 max-w-lg" : "max-w-fit px-6";
+
   return (
     <div className="flex-none flex flex-row z-40 fixed bottom-0 left-0 right-0">
       <div
-        className="mx-auto h-20 container justify-between bg-white dark:bg-gray-900 bottom-nav-content px-2 flex flex-row flex-grow relative w-full space-x-3 max-w-3xl"
+        className={`mx-auto h-20 container justify-between bg-white dark:bg-gray-900 bottom-nav-content flex flex-row flex-grow relative space-x-3 w-full ${width}`}
         style={{ borderRadius: "12px 12px 0 0" }}
       >
         <div className="flex space-x-4">
@@ -78,7 +74,7 @@ export const BottomNav: FC = () => {
         <FabContainer />
       </div>
     </div>
-  )
+  );
 };
 
 const BottomNavItem: React.FC<{
