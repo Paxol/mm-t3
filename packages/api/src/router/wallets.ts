@@ -20,7 +20,7 @@ export const walletsRouter = createTRPCRouter({
           deleted: input.includeDeleted,
         },
         orderBy: {
-          name: "desc",
+          name: "asc",
         },
       });
     }),

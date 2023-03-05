@@ -96,6 +96,7 @@ export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
     if (createTx.status === "success" || updateTx.status === "success") {
       setDialogOpen(false);
       apiContext.transactions.getRange.invalidate();
+      apiContext.wallets.invalidate();
     }
   })
 
