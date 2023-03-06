@@ -1,4 +1,8 @@
-FROM mitchpash/pnpm AS builder
+FROM node:lts-slim AS base
+
+RUN npm install -g pnpm
+
+FROM base as builder
 
 ARG DATABASE_URL
 ARG NEXTAUTH_URL
@@ -13,14 +17,12 @@ ENV GOOGLE_CLIENT_ID $GOOGLE_CLIENT_ID
 ENV GOOGLE_CLIENT_SECRET $GOOGLE_CLIENT_SECRET
 
 WORKDIR /mm-t3
-
 COPY . .
 
-RUN apk add --no-cache libc6-compat
 RUN pnpm install
 RUN pnpm build --filter=nextjs
 
-FROM mitchpash/pnpm AS runner
+FROM base AS runner
 WORKDIR /mm-t3
 
 ENV NODE_ENV production
