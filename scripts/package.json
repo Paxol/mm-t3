@@ -5,7 +5,6 @@
   "scripts": {
     "clean": "rm -rf .next .turbo node_modules",
     "migrate": "pnpm with-env ts-node migrate.ts",
-    "docker:build": "pnpm with-env ts-node dockerBuild.ts",
     "type-check": "tsc --noEmit",
     "with-env": "dotenv -e ../.env --"
   },
