@@ -97,6 +97,7 @@ export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
       setDialogOpen(false);
       apiContext.transactions.getRange.invalidate();
       apiContext.wallets.invalidate();
+      apiContext.dashboard.invalidate();
     }
   })
 
