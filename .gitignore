@@ -46,3 +46,7 @@ yarn-error.log*
 
 # turbo
 .turbo
+app/public/sw.js
+app/public/sw.js.map
+app/public/workbox-*.js
+app/public/workbox-*.js.map
