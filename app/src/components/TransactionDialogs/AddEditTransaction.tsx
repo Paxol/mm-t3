@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { useAtom } from "jotai";
 import moment from "moment";
@@ -18,7 +18,7 @@ export type TransactionDialogData =
     }
   | {
       type: "AddTransaction";
-      transaction?: Transaction | TransactionWithJoins;
+      transaction?: Partial<Transaction | TransactionWithJoins>;
     };
 
 export interface FormType {
@@ -42,6 +42,7 @@ export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
     ?.sort((a, b) => (b.name > a.name ? -1 : 1));
 
   const defaultValues = getTxDefaults(data, wallets, categories);
+  console.log("defaultValues", defaultValues);
 
   const [wallet, setWallet] = useState<Wallet | undefined>(
     defaultValues?.wallet,
@@ -99,7 +100,7 @@ export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
       apiContext.wallets.invalidate();
       apiContext.dashboard.invalidate();
     }
-  })
+  });
 
   if (!data) return null;
 
@@ -258,7 +259,9 @@ export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
       <div className="mt-4 flex justify-end items-center space-x-3">
         <Button
           color="primary"
-          disabled={createTx.status === "loading" && updateTx.status === "loading"}
+          disabled={
+            createTx.status === "loading" && updateTx.status === "loading"
+          }
           onClick={handleSubmit}
         >
           {data.type === "AddTransaction" ? "Aggiungi" : "Modifica"}
@@ -274,17 +277,19 @@ function getTxDefaults(
   wallets: Wallet[] | undefined,
   categories: Category[] | undefined,
 ) {
-  if (!data || data.type !== "EditTransaction") return null;
+  console.log("getTxDefaults :: data", data);
+
+  if (!data) return null;
 
   return {
-    wallet: wallets?.find((w) => w.id === data.transaction.walletId),
-    walletTo: wallets?.find((w) => w.id === data.transaction.walletToId),
-    category: categories?.find((w) => w.id === data.transaction.categoryId),
-    amount: data.transaction.amount ?? 0,
-    date: moment(data.transaction.date).format("YYYY-MM-DD"),
-    time: moment(data.transaction.date).format("HH:mm"),
-    description: data.transaction.description ?? "",
-    type: data.transaction.type ?? "i",
+    wallet: wallets?.find((w) => w.id === data.transaction?.walletId),
+    walletTo: wallets?.find((w) => w.id === data.transaction?.walletToId),
+    category: categories?.find((w) => w.id === data.transaction?.categoryId),
+    amount: data.transaction?.amount ?? 0,
+    date: moment(data.transaction?.date).format("YYYY-MM-DD"),
+    time: moment(data.transaction?.date).format("HH:mm"),
+    description: data.transaction?.description ?? "",
+    type: data.transaction?.type ?? "i",
   };
 }
 

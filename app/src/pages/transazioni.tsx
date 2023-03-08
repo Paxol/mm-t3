@@ -6,9 +6,14 @@ import { atom, useAtom, useAtomValue } from "jotai";
 import moment from "moment";
 import { useSession } from "next-auth/react";
 import { BsFilter } from "react-icons/bs";
-import { RiArrowLeftRightLine } from "react-icons/ri";
+import {
+  RiArrowLeftDownLine,
+  RiArrowLeftRightLine,
+  RiArrowRightUpLine,
+} from "react-icons/ri";
 import Datepicker from "react-tailwindcss-datepicker";
 import { TransactionWithJoins } from "@paxol/api/src/types";
+import { Category } from "@paxol/db";
 
 import { api } from "~/utils/api";
 import { Card } from "~/components/Card";
@@ -106,31 +111,6 @@ function applyFilters(
 
 const Transactions: NextPage = () => {
   const { data } = useSession();
-  const [, setFab] = useAtom(fabAtom);
-
-  const [, setDialogData] = useAtom(dialogActionAtom);
-
-  useEffect(() => {
-    setFab({
-      type: "withMenu",
-      actions: [
-        {
-          text: "Transazione generica",
-          color: "rgb(156, 163, 175)",
-          icon: (
-            <RiArrowLeftRightLine
-              style={{ width: "1.25em", height: "1.25em" }}
-            />
-          ),
-          onClick: () => setDialogData(["open", { type: "AddTransaction" }]),
-        },
-      ],
-    });
-
-    return () => {
-      setFab({ type: "none" });
-    };
-  }, [setDialogData, setFab]);
 
   return (
     <>
@@ -159,33 +139,124 @@ const Transactions: NextPage = () => {
 
 export default Transactions;
 
+function mostFrequentCategories(
+  txs: TransactionWithJoins[] | undefined,
+): [Category | undefined, Category | undefined] {
+  if (!txs) return [undefined, undefined];
+
+  const frequencyMaps = {
+    i: new Map<string, [Category, number]>(),
+    o: new Map<string, [Category, number]>(),
+  };
+
+  for (let i = 0; i < txs.length; i++) {
+    const tx = txs[i];
+
+    if (!tx || !tx.category || (tx.type !== "i" && tx.type !== "o")) continue;
+
+    const frequency = frequencyMaps[tx.type].get(tx.category.id)?.[1];
+    frequencyMaps[tx.type].set(tx.category.id, [
+      tx.category,
+      frequency ? frequency + 1 : 1,
+    ]);
+  }
+
+  const topIn = [...frequencyMaps.i.entries()].sort(
+    ([, a], [, b]) => b[1] - a[1],
+  )[0]?.[1][0];
+  const topOut = [...frequencyMaps.o.entries()].sort(
+    ([, a], [, b]) => b[1] - a[1],
+  )[0]?.[1][0];
+
+  return [topIn, topOut];
+}
+
 const TransactionsPage = () => {
   const { from, to } = useAtomValue(dateRangeAtom);
   const filters = useAtomValue(filtersAtom);
 
-  const transactionQuery = api.transactions.getRange.useQuery({ from, to });
-  const categoriesQuery = api.categories.get.useQuery();
-  const walletsQuery = api.wallets.get.useQuery();
+  const [, setFab] = useAtom(fabAtom);
+  const [, setDialogData] = useAtom(dialogActionAtom);
 
-  const isLoading =
-    transactionQuery.isLoading ||
-    categoriesQuery.isLoading ||
-    walletsQuery.isLoading;
+  const [transactionQuery] = api.useQueries(
+    (t) => [
+      t.transactions.getRange({ from, to }),
+      t.categories.get(),
+      t.wallets.get(),
+    ],
+  );
 
-  const error =
-    transactionQuery.error || categoriesQuery.error || walletsQuery.error;
+  const [topIn, topOut] = useMemo(
+    () => mostFrequentCategories(transactionQuery.data),
+    [transactionQuery.data],
+  );
+
+  useEffect(() => {
+    const fabs = [
+      {
+        text: "Transazione generica",
+        color: "rgb(28, 25, 23)",
+        icon: (
+          <RiArrowLeftRightLine
+            className="text-stone-400"
+            style={{ width: "1.25em", height: "1.25em" }}
+          />
+        ),
+        onClick: () => setDialogData(["open", { type: "AddTransaction" }]),
+      },
+    ];
+
+    if (topIn)
+      fabs.push({
+        text: topIn.name,
+        color: "rgb(6, 78, 59)",
+        icon: (
+          <RiArrowLeftDownLine
+            className="text-emerald-400"
+            style={{ width: "1.25em", height: "1.25em" }}
+          />
+        ),
+        onClick: () =>
+          setDialogData([
+            "open",
+            {
+              type: "AddTransaction",
+              transaction: { type: "i", categoryId: topIn.id },
+            },
+          ]),
+      });
+
+    if (topOut)
+      fabs.push({
+        text: topOut.name,
+        color: "rgb(127, 29, 29)",
+        icon: (
+          <RiArrowRightUpLine
+            className="text-red-400"
+            style={{ width: "1.25em", height: "1.25em" }}
+          />
+        ),
+        onClick: () =>
+          setDialogData([
+            "open",
+            {
+              type: "AddTransaction",
+              transaction: { type: "o", categoryId: topOut.id },
+            },
+          ]),
+      });
+
+    setFab({
+      type: "withMenu",
+      actions: fabs,
+    });
+  }, [topIn, topOut, setDialogData, setFab]);
 
   const dailyTransactions = useMemo(
     () =>
       getDailyTransactionsArray(applyFilters(transactionQuery.data, filters)),
     [transactionQuery.data, filters],
   );
-
-  if (isLoading) return <span>Loading</span>;
-  if (error) {
-    console.error(error);
-    return <span>An error occurred</span>;
-  }
 
   return (
     <Card>
