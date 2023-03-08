@@ -8,6 +8,7 @@ import { MdAttachMoney } from "react-icons/md";
 import { RiArrowLeftRightLine, RiDashboard2Line } from "react-icons/ri";
 
 import FabContainer, { fabVisibleAtom } from "./FabContainer";
+import { GenericErrorBoundary } from "./GenericErrorBoundary";
 
 export const PageLayout: FC<PropsWithChildren<{ name: string }>> = (props) => {
   return (
@@ -18,7 +19,7 @@ export const PageLayout: FC<PropsWithChildren<{ name: string }>> = (props) => {
             {props.name}
           </h1>
 
-          {props.children}
+          <GenericErrorBoundary>{props.children}</GenericErrorBoundary>
         </div>
       </div>
 

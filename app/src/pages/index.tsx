@@ -59,9 +59,6 @@ function sumWalletsBalances(wallets: Wallet[]): [number, number] {
 
 const Home: NextPage = () => {
   const { data } = useSession();
-  const query = api.dashboard.transactions.useQuery();
-
-  console.log("Home query:", query);
 
   return (
     <>
@@ -86,9 +83,9 @@ export default Home;
 
 const DashboardPage = () => {
   const [dashboard, categories, wallets] = api.useQueries((t) => [
-    t.dashboard.transactions(),
-    t.categories.get(),
-    t.wallets.get(),
+    t.dashboard.transactions(undefined, { suspense: false }),
+    t.categories.get(undefined, { suspense: false }),
+    t.wallets.get(undefined, { suspense: false }),
   ]);
 
   const [, setFab] = useAtom(fabAtom);
@@ -110,9 +107,9 @@ const DashboardPage = () => {
     }
   }, [isLoading, categories.data, wallets.data, setFab, setDialogData]);
 
-  if (error) {
+  if (!isLoading && error) {
     console.error(error);
-    return <div role="status">Si è verificato un errore</div>;
+    throw error;
   }
 
   const showCategoriesCards = isLoading || (dashboard.data?.length || 0) > 0;
@@ -348,6 +345,8 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 3);
   }, [transactions, type]);
+
+  if (categories.length === 0) return null;
 
   return (
     <Card className="flex-1 mb-4">

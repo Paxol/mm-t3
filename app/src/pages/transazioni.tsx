@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
@@ -15,6 +15,7 @@ import { Card } from "~/components/Card";
 import { Checkbox } from "~/components/Checkbox";
 import { fabAtom } from "~/components/FabContainer";
 import { Input } from "~/components/Input";
+import { Loader } from "~/components/Loader";
 import { LoginPage } from "~/components/LoginPage";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
@@ -56,6 +57,7 @@ function applyFilters(
 ) {
   return txs?.filter((t) => {
     const date = t.date.toISOString();
+
     if (
       date < (filters.startDate?.toISOString() ?? "") ||
       date > (filters.endDate?.toISOString() ?? "")
@@ -78,13 +80,16 @@ function applyFilters(
     if (
       t.type === "i" &&
       t.categoryId &&
-      filters.categoriesIn?.has(t.categoryId)
+      filters.categoriesIn &&
+      (filters.categoriesIn.has(t.categoryId) || filters.categoriesIn.size == 0)
     )
       return false;
     if (
       t.type === "o" &&
       t.categoryId &&
-      filters.categoriesOut?.has(t.categoryId)
+      filters.categoriesOut &&
+      (filters.categoriesOut.has(t.categoryId) ||
+        filters.categoriesOut.size == 0)
     )
       return false;
 
@@ -142,7 +147,10 @@ const Transactions: NextPage = () => {
           <TansactionDialogContainer />
 
           <Filters />
-          <TransactionsPage />
+
+          <Suspense fallback={<Loader className="mt-16" />}>
+            <TransactionsPage />
+          </Suspense>
         </PageLayout>
       )}
     </>
@@ -364,7 +372,7 @@ const AdvancedFilters = () => {
     ?.filter((c) => c.type === "out")
     .map((c) => ({ id: c.id, label: c.name }));
 
-  if (!wallets || !categoriesIn || !categoriesOut) return null;
+  if (!wallets || !categoriesIn || !categoriesOut) return <Loader />;
 
   return (
     <div className="flex flex-col space-y-4">
