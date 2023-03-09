@@ -4,7 +4,6 @@ import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { atom, useAtom, useAtomValue } from "jotai";
 import moment from "moment";
-import { useSession } from "next-auth/react";
 import { BsFilter } from "react-icons/bs";
 import {
   RiArrowLeftDownLine,
@@ -21,7 +20,6 @@ import { Checkbox } from "~/components/Checkbox";
 import { fabAtom } from "~/components/FabContainer";
 import { Input } from "~/components/Input";
 import { Loader } from "~/components/Loader";
-import { LoginPage } from "~/components/LoginPage";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
 import {
@@ -109,33 +107,25 @@ function applyFilters(
   });
 }
 
-const Transactions: NextPage = () => {
-  const { data } = useSession();
+const Transactions: NextPage = () => (
+  <>
+    <Head>
+      <title>UMoney - Traccia le tue finanze</title>
+      <meta name="description" content="UMoney - Traccia le tue finanze" />
+      <link rel="icon" href="/favicon.ico" />
+    </Head>
 
-  return (
-    <>
-      <Head>
-        <title>UMoney - Traccia le tue finanze</title>
-        <meta name="description" content="UMoney - Traccia le tue finanze" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <PageLayout name="Tansazioni" protectedPage>
+      <TansactionDialogContainer />
 
-      {!data ? (
-        <LoginPage />
-      ) : (
-        <PageLayout name="Tansazioni">
-          <TansactionDialogContainer />
+      <Filters />
 
-          <Filters />
-
-          <Suspense fallback={<Loader className="mt-16" />}>
-            <TransactionsPage />
-          </Suspense>
-        </PageLayout>
-      )}
-    </>
-  );
-};
+      <Suspense fallback={<Loader className="mt-16" />}>
+        <TransactionsPage />
+      </Suspense>
+    </PageLayout>
+  </>
+);
 
 export default Transactions;
 
@@ -178,13 +168,11 @@ const TransactionsPage = () => {
   const [, setFab] = useAtom(fabAtom);
   const [, setDialogData] = useAtom(dialogActionAtom);
 
-  const [transactionQuery] = api.useQueries(
-    (t) => [
-      t.transactions.getRange({ from, to }),
-      t.categories.get(),
-      t.wallets.get(),
-    ],
-  );
+  const [transactionQuery] = api.useQueries((t) => [
+    t.transactions.getRange({ from, to }),
+    t.categories.get(),
+    t.wallets.get(),
+  ]);
 
   const [topIn, topOut] = useMemo(
     () => mostFrequentCategories(transactionQuery.data),

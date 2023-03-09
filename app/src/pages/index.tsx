@@ -5,12 +5,10 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { Category, Wallet } from "@prisma/client";
 import { useAtom } from "jotai";
 import moment from "moment";
-import { useSession } from "next-auth/react";
 import { RiMoneyEuroCircleLine } from "react-icons/ri";
 
 import { api } from "~/utils/api";
 import { fabAtom } from "~/components/FabContainer";
-import { LoginPage } from "~/components/LoginPage";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
 import {
@@ -57,27 +55,19 @@ function sumWalletsBalances(wallets: Wallet[]): [number, number] {
   return [cash, investments];
 }
 
-const Home: NextPage = () => {
-  const { data } = useSession();
+const Home: NextPage = () => (
+  <>
+    <Head>
+      <title>UMoney - Traccia le tue finanze</title>
+      <meta name="description" content="UMoney - Traccia le tue finanze" />
+      <link rel="icon" href="/favicon.ico" />
+    </Head>
 
-  return (
-    <>
-      <Head>
-        <title>UMoney - Traccia le tue finanze</title>
-        <meta name="description" content="UMoney - Traccia le tue finanze" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      {!data ? (
-        <LoginPage />
-      ) : (
-        <PageLayout name="Dashboard">
-          <DashboardPage />
-        </PageLayout>
-      )}
-    </>
-  );
-};
+    <PageLayout name="Dashboard" protectedPage>
+      <DashboardPage />
+    </PageLayout>
+  </>
+);
 
 export default Home;
 

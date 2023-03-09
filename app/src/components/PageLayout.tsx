@@ -2,6 +2,7 @@ import { FC, PropsWithChildren } from "react";
 import Link from "next/link";
 import classNames from "classnames";
 import { useAtomValue } from "jotai";
+import { useSession } from "next-auth/react";
 import { BsTag } from "react-icons/bs";
 import { HiOutlineChartPie } from "react-icons/hi";
 import { MdAttachMoney } from "react-icons/md";
@@ -9,17 +10,24 @@ import { RiArrowLeftRightLine, RiDashboard2Line } from "react-icons/ri";
 
 import FabContainer, { fabVisibleAtom } from "./FabContainer";
 import { GenericErrorBoundary } from "./GenericErrorBoundary";
+import { LoginPage } from "./LoginPage";
 
-export const PageLayout: FC<PropsWithChildren<{ name: string }>> = (props) => {
+export const PageLayout: FC<
+  PropsWithChildren<{ name: string; protectedPage: boolean }>
+> = ({ children, name, protectedPage }) => {
+  const { data } = useSession();
+
+  if (!data && protectedPage) return <LoginPage />;
+
   return (
     <main className="mx-auto flex flex-col items-center justify-center min-h-screen p-4">
       <div className="flex-auto w-full pb-20">
         <div className="container mx-auto relative">
           <h1 className="text-2xl font-semibold my-5 text-center text-white">
-            {props.name}
+            {name}
           </h1>
 
-          <GenericErrorBoundary>{props.children}</GenericErrorBoundary>
+          <GenericErrorBoundary>{children}</GenericErrorBoundary>
         </div>
       </div>
 
