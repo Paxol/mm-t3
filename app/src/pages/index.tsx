@@ -111,7 +111,7 @@ const DashboardPage = () => {
       <div className="flex flex-col lg:flex-row lg:space-x-4">
         <Resume />
         {showCategoriesCards && (
-          <div className="flex flex-col sm:flex-row sm:space-x-4 lg:flex-col lg:space-x-0 lg:flex-[3_3_0%] 2xl:space-x-4 2xl:flex-row 2xl:flex-6">
+          <div className="flex flex-wrap -mr-4">
             <Categories type="in" />
             <Categories type="out" />
           </div>
@@ -165,7 +165,7 @@ const Resume = () => {
             <div className="flex flex-col flex-none space-y-5 mt-5 justify-center self-center">
               <Balance cash={cash} investments={investments} />
 
-              <div className="flex space-x-8 flex-none">
+              <div className="flex space-x-8 flex-none lg:flex-col lg:space-x-0 lg:space-y-4 xl:flex-row xl:space-x-4 xl:space-y-0">
                 {/* Entrate */}
                 <InOutSum type="in" value={earnings} />
 
@@ -339,7 +339,9 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
   if (categories.length === 0) return null;
 
   return (
-    <Card className="flex-1 mb-4">
+    <div className="grow basis-1/2 pr-4">
+
+    <Card className="mb-4 p-4">
       <div className="flex flex-none justify-between items-center mb-3">
         <span className="text-lg font-medium dark:text-white">
           {type === "in" ? "Entrate" : "Uscite"}
@@ -351,15 +353,20 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
           <div
             key={id}
             className="flex border-b py-3 space-x-3 items-center last:border-b-0 dark:border-gray-700"
-          >
+            >
             <div className="flex-none">
-              <div
+              {/* <div
                 className={`w-10 h-10 ${
                   type === "in" ? "bg-green-400" : "bg-red-400"
                 } text-gray-800 p-1.5 rounded-2xl`}
-              >
+                >
                 <RiMoneyEuroCircleLine className="w-full h-full" />
-              </div>
+              </div> */}
+              <div
+                className={`w-4 h-4 ${
+                  type === "in" ? "bg-green-400" : "bg-red-400"
+                } rounded-full`}
+                ></div>
             </div>
             <div className="flex-auto flex flex-col dark:text-white">
               <span className="text-lg leading-none font-medium mb-1">
@@ -373,6 +380,7 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
         ))}
       </div>
     </Card>
+        </div>
   );
 };
 

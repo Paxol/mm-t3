@@ -27,29 +27,33 @@ export const Transaction: FC<{
 
   return (
     <div
-      className="flex border-t first:border-0 last:pb-0 py-3 space-x-3 items-center dark:border-gray-700"
+      className="flex border-t first:border-0 last:pb-0 py-3 space-x-2 items-center dark:border-gray-700"
       onClick={() => onElementClick && onElementClick(element)}
     >
-      <div className="flex-none">
-        <div className={`w-10 h-10 ${color} text-gray-800 p-1.5 rounded-2xl`}>
-          <RiMoneyEuroCircleLine className="w-full h-full" />
+      <div className="flex flex-auto items-center">
+        <div className="flex-none mr-3 mt-0.5">
+          {/* Maybe category icon */}
+          {/* <div className={`w-10 h-10 ${color} text-gray-800 p-1.5 rounded-2xl`}>
+            <RiMoneyEuroCircleLine className="w-full h-full" />
+          </div> */}
+          <div className={`w-4 h-4 ${color} rounded-full`}></div>
         </div>
-      </div>
-      <div className="flex-auto flex flex-col dark:text-white">
-        <span className="text-lg leading-none font-semibold mb-1">
-          {categoryName}
-        </span>
-        {element.description && (
-          <span className="text-sm leading-none font-medium text-gray-800 dark:text-gray-100 mb-1">
-            {element.description}
+        <div className="flex-auto flex flex-col dark:text-white">
+          <span className="text-lg leading-none font-semibold mb-1">
+            {categoryName}
           </span>
-        )}
-        <span className="text-sm leading-none text-gray-800 dark:text-gray-100 mb-2">
-          {getWalletText(element)}
-        </span>
-        <span className="text-sm leading-none font-light text-gray-600 dark:text-gray-300">
-          {moment(element.date).format("DD/MM/YYYY HH:mm")}
-        </span>
+          {element.description && (
+            <span className="text-sm leading-none font-medium text-gray-800 dark:text-gray-100 mb-1">
+              {element.description}
+            </span>
+          )}
+          <span className="text-sm leading-none text-gray-800 dark:text-gray-100 mb-2">
+            {getWalletText(element)}
+          </span>
+          <span className="text-sm leading-none font-light text-gray-600 dark:text-gray-300">
+            {moment(element.date).format("DD/MM/YYYY HH:mm")}
+          </span>
+        </div>
       </div>
       <div
         className={`flex-none flex items-center space-x-1 ${color} py-0.5 px-2 rounded-md`}

@@ -247,7 +247,7 @@ const TransactionsPage = () => {
   );
 
   return (
-    <Card>
+    <Card className="px-4 py-1">
       {dailyTransactions?.map(([date, t]) => (
         <DailyTransactions key={date} date={date} transactions={t} />
       )) ?? (
@@ -385,7 +385,7 @@ const Filters = () => {
   const [ref] = useAutoAnimate();
 
   return (
-    <Card className="mb-4">
+    <Card className="p-4 mb-4">
       <div className="flex space-x-4">
         <div className="flex-1 dpw">
           <Datepicker

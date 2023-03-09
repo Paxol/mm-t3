@@ -42,11 +42,11 @@ const pages = [
     icon: <RiDashboard2Line className="h-5 w-full" />,
     page: "/",
   },
-  {
-    name: "Conti",
-    icon: <MdAttachMoney className="h-5 w-full" />,
-    page: "/conti",
-  },
+  // {
+  //   name: "Conti",
+  //   icon: <MdAttachMoney className="h-5 w-full" />,
+  //   page: "/conti",
+  // },
   {
     name: "Categorie",
     icon: <BsTag className="h-5 w-full" />,
@@ -75,7 +75,7 @@ export const BottomNav: FC = () => {
         className={`transition-all mx-auto h-20 container justify-between bg-white dark:bg-gray-900 bottom-nav-content flex flex-row flex-grow relative space-x-3 w-full ${width}`}
         style={{ borderRadius: "12px 12px 0 0" }}
       >
-        <div className="flex space-x-4">
+        <div className="flex">
           {pages.map((item, index) => (
             <BottomNavItem key={index} {...item} />
           ))}
@@ -95,7 +95,7 @@ const BottomNavItem: React.FC<{
   const active = path === page && path.length === page.length;
 
   const classes = classNames({
-    "min-w-[32px] h-full flex flex-col space-y-1 justify-center hover:no-underline text-center":
+    "min-w-[65px] h-full flex flex-col space-y-1 justify-center hover:no-underline text-center":
       true,
     "text-white": active,
     "hover:text-green-600 text-gray-600 text-gray-500 hover:text-white":
