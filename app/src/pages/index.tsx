@@ -5,7 +5,6 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { Category, Wallet } from "@prisma/client";
 import { useAtom } from "jotai";
 import moment from "moment";
-import { RiMoneyEuroCircleLine } from "react-icons/ri";
 
 import { api } from "~/utils/api";
 import { fabAtom } from "~/components/FabContainer";

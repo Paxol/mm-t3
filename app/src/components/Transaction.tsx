@@ -1,7 +1,6 @@
 import { FC } from "react";
 import moment from "moment";
 import { BiTrash } from "react-icons/bi";
-import { RiMoneyEuroCircleLine } from "react-icons/ri";
 import { TransactionWithJoins } from "@paxol/api/src/types";
 
 function getWalletText({ wallet, walletTo }: TransactionWithJoins) {

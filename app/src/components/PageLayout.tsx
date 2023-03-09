@@ -5,7 +5,6 @@ import { useAtomValue } from "jotai";
 import { useSession } from "next-auth/react";
 import { BsTag } from "react-icons/bs";
 import { HiOutlineChartPie } from "react-icons/hi";
-import { MdAttachMoney } from "react-icons/md";
 import { RiArrowLeftRightLine, RiDashboard2Line } from "react-icons/ri";
 
 import FabContainer, { fabVisibleAtom } from "./FabContainer";
