@@ -38,7 +38,7 @@
     "react-icons": "^4.7.1",
     "react-tailwindcss-datepicker": "^1.4.2",
     "react-tiny-fab": "^4.0.4",
-    "recharts": "^2.4.3",
+    "recharts": "^2.2.0",
     "zod": "^3.20.2"
   },
   "devDependencies": {

@@ -11,29 +11,39 @@ import { Category } from "@paxol/db";
 import { api } from "~/utils/api";
 import { Card } from "~/components/Card";
 import { Doughnut } from "~/components/Doughnut";
+import { fabAtom } from "~/components/FabContainer";
+import { GradientAreaChart } from "~/components/GradientAreaChart";
 import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
 
-const Home: NextPage = () => (
-  <>
-    <Head>
-      <title>UMoney - Traccia le tue finanze</title>
-      <meta name="description" content="UMoney - Traccia le tue finanze" />
-      <link rel="icon" href="/favicon.ico" />
-    </Head>
+const Grafici: NextPage = () => {
+  const [fab, setFab] = useAtom(fabAtom);
 
-    <PageLayout name="Grafici" protectedPage>
-      <DatePickerCard />
+  useEffect(() => {
+    if (fab.type !== "none") setFab({ type: "none" });
+  });
 
-      <Suspense fallback={<Loader className="mt-16" />}>
-        <GraphsCard />
-      </Suspense>
-    </PageLayout>
-  </>
-);
+  return (
+    <>
+      <Head>
+        <title>UMoney - Traccia le tue finanze</title>
+        <meta name="description" content="UMoney - Traccia le tue finanze" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
 
-export default Home;
+      <PageLayout name="Grafici" protectedPage>
+        <DatePickerCard />
+
+        <Suspense fallback={<Loader className="mt-16" />}>
+          <GraphsCard />
+        </Suspense>
+      </PageLayout>
+    </>
+  );
+};
+
+export default Grafici;
 
 const GraphsCard = () => {
   const { startDate, endDate } = useAtomValue(dateRangeAtom);
@@ -47,9 +57,10 @@ const GraphsCard = () => {
   ]);
 
   return (
-    <>
+    <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
       <TransactionsPerCategoryCard />
-    </>
+      <BalanceCard />
+    </div>
   );
 };
 
@@ -121,8 +132,6 @@ const DatePickerCard = () => {
     const endDate = nullishRange.endDate?.toISOString();
 
     if (startDate && endDate) {
-      console.log("invalidated");
-
       setRange({ startDate, endDate });
 
       ctx.transactions.getRange.invalidate();
@@ -178,7 +187,7 @@ const TransactionsPerCategoryCard = () => {
   const activeIndex = data?.findIndex(({ id }) => openCategory === id);
 
   return (
-    <Card className="mt-4 lg:mt-0 dark:text-white">
+    <Card className="flex-[2_2_0%] dark:text-white">
       <div className="text-lg font-medium dark:text-white mb-3">
         Transazioni per categoria
       </div>
@@ -272,7 +281,7 @@ const CategoryCollapse: React.FC<{
         .map((t) => <Transaction key={t.id} element={t} hideTitle />),
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [id],
+    [id, dateRange.startDate, dateRange.endDate],
   );
 
   const [ref] = useAutoAnimate();
@@ -295,5 +304,78 @@ const CategoryCollapse: React.FC<{
         {open && filteredTxs}
       </div>
     </div>
+  );
+};
+
+const generate = (
+  txs: TransactionWithJoins[],
+  start: moment.Moment,
+  end: moment.Moment,
+) => {
+  const balances = [] as number[];
+  const days = moment.min(end, moment()).diff(start, "days");
+
+  for (let i = 0; i < txs.length; i++) {
+    const tx = txs[i];
+
+    if (!tx || tx.type === "t" || tx.future) continue;
+
+    const dayIndex = moment(tx.date).diff(start, "days");
+    if (dayIndex < 0 || dayIndex >= days) continue;
+
+    const delta = tx.type === "i" ? tx.amount : -tx.amount;
+    balances[dayIndex] = (balances[dayIndex] ?? 0) + delta;
+  }
+
+  if (!balances[0]) balances[0] = 0;
+
+  for (let i = 1; i < days + 1; i++) {
+    const prevBalance = balances[i - 1] ?? 0;
+    const balance = balances[i] ?? 0;
+
+    balances[i] = prevBalance + balance;
+  }
+
+  return balances.map((balance, idx) => ({
+    name: moment(start).add(idx, "days").format("DD"),
+    value: Number(balance.toFixed(2)),
+  }));
+};
+
+const BalanceCard = () => {
+  const ctx = api.useContext();
+
+  const dateRange = useAtomValue(dateRangeAtom);
+
+  const txs = ctx.transactions.getRange.getData({
+    from: dateRange.startDate,
+    to: dateRange.endDate,
+  });
+
+  const data = useMemo(() => {
+    if (!txs) return;
+
+    return generate(
+      txs,
+      moment(dateRange.startDate),
+      moment(dateRange.endDate),
+    );
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange.startDate, dateRange.endDate]);
+
+  return (
+    <Card className="flex-[1_1_0%]">
+      <div className="flex flex-col h-full min-h-[300px]">
+        <div className="flex items-center justify-between space-x-4 mb-4">
+          <span className="text-lg font-medium dark:text-white">Bilancio</span>
+        </div>
+        <div className="flex-1 relative">
+          <div className="absolute inset-0">
+            <GradientAreaChart data={data} />
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 };
