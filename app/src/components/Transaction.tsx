@@ -18,9 +18,16 @@ function getColor(type: string) {
 export const Transaction: FC<{
   element: TransactionWithJoins;
   showTrash?: boolean;
+  hideTitle?: boolean;
   onElementClick?: (element: TransactionWithJoins) => void;
   onTrashClick?: (element: TransactionWithJoins) => void;
-}> = ({ element, onTrashClick, onElementClick, showTrash = false }) => {
+}> = ({
+  element,
+  onTrashClick,
+  onElementClick,
+  hideTitle = false,
+  showTrash = false,
+}) => {
   const categoryName = element.category?.name || "Transazione";
   const color = getColor(element.type);
 
@@ -38,9 +45,11 @@ export const Transaction: FC<{
           <div className={`w-4 h-4 ${color} rounded-full`}></div>
         </div>
         <div className="flex-auto flex flex-col dark:text-white">
-          <span className="text-lg leading-none font-semibold mb-1">
-            {categoryName}
-          </span>
+          {!hideTitle && (
+            <span className="text-lg leading-none font-semibold mb-1">
+              {categoryName}
+            </span>
+          )}
           {element.description && (
             <span className="text-sm leading-none font-medium text-gray-800 dark:text-gray-100 mb-1">
               {element.description}
