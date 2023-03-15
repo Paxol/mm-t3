@@ -107,7 +107,7 @@ const DashboardPage = () => {
     <div>
       <TansactionDialogContainer />
 
-      <div className="flex flex-col lg:flex-row lg:space-x-4">
+      <div className="flex flex-col lg:mb-4 lg:flex-row lg:space-x-4">
         <Resume />
         {showCategoriesCards && (
           <div className="flex flex-wrap -mr-4">
@@ -153,7 +153,7 @@ const Resume = () => {
   const showNoWalletMessage = !isLoading && !hasWallets;
 
   return (
-    <Card className="lg:flex-[7_7_0%] xl:flex-[6_6_0%] items-center w-full mb-4 text-center sm:flex-row sm:space-x-6 sm:text-left lg:px-8 lg:space-x-16 xl:px-12 xl:space-x-24">
+    <Card className="lg:flex-[7_7_0%] xl:flex-[6_6_0%] items-center w-full mb-4 lg:mb-0 text-center sm:flex-row sm:space-x-6 sm:text-left lg:px-8 lg:space-x-16 xl:px-12 xl:space-x-24">
       <div
         ref={infoContainer}
         className={showNoWalletMessage ? "flex-auto" : ""}
@@ -339,47 +339,46 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
 
   return (
     <div className="grow basis-1/2 pr-4">
+      <Card className="lg:h-full mb-4 p-4">
+        <div className="flex flex-none justify-between items-center mb-3">
+          <span className="text-lg font-medium dark:text-white">
+            {type === "in" ? "Entrate" : "Uscite"}
+          </span>
+        </div>
 
-    <Card className="mb-4 p-4">
-      <div className="flex flex-none justify-between items-center mb-3">
-        <span className="text-lg font-medium dark:text-white">
-          {type === "in" ? "Entrate" : "Uscite"}
-        </span>
-      </div>
-
-      <div className="flex-auto flex flex-col justify-center">
-        {categories.map(({ category: { id, type, name }, amount }) => (
-          <div
-            key={id}
-            className="flex border-b py-3 space-x-3 items-center last:border-b-0 dark:border-gray-700"
+        <div className="flex-auto flex flex-col justify-center">
+          {categories.map(({ category: { id, type, name }, amount }) => (
+            <div
+              key={id}
+              className="flex border-b py-3 space-x-3 items-center last:border-b-0 dark:border-gray-700"
             >
-            <div className="flex-none">
-              {/* <div
+              <div className="flex-none">
+                {/* <div
                 className={`w-10 h-10 ${
                   type === "in" ? "bg-green-400" : "bg-red-400"
                 } text-gray-800 p-1.5 rounded-2xl`}
                 >
                 <RiMoneyEuroCircleLine className="w-full h-full" />
               </div> */}
-              <div
-                className={`w-4 h-4 ${
-                  type === "in" ? "bg-green-400" : "bg-red-400"
-                } rounded-full`}
+                <div
+                  className={`w-4 h-4 ${
+                    type === "in" ? "bg-green-400" : "bg-red-400"
+                  } rounded-full`}
                 ></div>
+              </div>
+              <div className="flex-auto flex flex-col dark:text-white">
+                <span className="text-lg leading-none font-medium mb-1">
+                  {name}
+                </span>
+                <span className="text-sm leading-none text-gray-800 dark:text-gray-100">
+                  € {amount.toFixed(2)}
+                </span>
+              </div>
             </div>
-            <div className="flex-auto flex flex-col dark:text-white">
-              <span className="text-lg leading-none font-medium mb-1">
-                {name}
-              </span>
-              <span className="text-sm leading-none text-gray-800 dark:text-gray-100">
-                € {amount.toFixed(2)}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Card>
+          ))}
         </div>
+      </Card>
+    </div>
   );
 };
 
