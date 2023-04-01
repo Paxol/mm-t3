@@ -1,20 +1,14 @@
-import { TRPCError } from "@trpc/server";
 import moment from "moment";
-
-import { ContextType } from "../../trpc";
+import { PrismaClient } from "@paxol/db";
 
 type DeleteParams = {
-  ctx: ContextType;
-  input: string;
+  prisma: PrismaClient;
+  userId: string;
+  txId: string;
 };
 
-export async function rawDelete(ctx: DeleteParams["ctx"], txId: string) {
-  if (!ctx.session) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-
-  const userId = ctx.session.user.id;
-  const tx = await ctx.prisma.transaction.findFirstOrThrow({
+export async function deleteTx({prisma, txId, userId}: DeleteParams) {
+  const tx = await prisma.transaction.findFirstOrThrow({
     select: {
       id: true,
       type: true,
@@ -35,7 +29,7 @@ export async function rawDelete(ctx: DeleteParams["ctx"], txId: string) {
   let walletToAmount: number | null = null;
 
   if (future) {
-    await ctx.prisma.transaction.delete({
+    await prisma.transaction.delete({
       where: {
         id: txId,
       },
@@ -53,12 +47,12 @@ export async function rawDelete(ctx: DeleteParams["ctx"], txId: string) {
   walletToAmount = walletTo ? walletTo.currentValue - amountDiff : null;
 
   const prismaActions = [
-    ctx.prisma.transaction.delete({
+    prisma.transaction.delete({
       where: {
         id: tx.id,
       },
     }),
-    ctx.prisma.wallet.update({
+    prisma.wallet.update({
       data: { currentValue: walletAmount },
       where: { id: tx.wallet.id },
     }),
@@ -66,17 +60,11 @@ export async function rawDelete(ctx: DeleteParams["ctx"], txId: string) {
 
   if (walletToAmount !== null && tx.walletTo)
     prismaActions.push(
-      ctx.prisma.wallet.update({
+      prisma.wallet.update({
         data: { currentValue: walletToAmount },
         where: { id: tx.walletTo.id },
       }),
     );
 
-  return prismaActions;
-}
-
-export async function deleteFn({ ctx, input: txId }: DeleteParams) {
-  const prismaActions = await rawDelete(ctx, txId);
-
-  if (prismaActions) await ctx.prisma.$transaction(prismaActions);
+  await prisma.$transaction(prismaActions);
 }

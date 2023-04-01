@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { create } from "../handlers/transactions/create";
-import { deleteFn } from "../handlers/transactions/delete";
-import { update } from "../handlers/transactions/update";
+import { createTx } from "../handlers/transactions/create";
+import { deleteTx } from "../handlers/transactions/delete";
+import { updateTx } from "../handlers/transactions/update";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TransactionWithJoins } from "../types";
 
@@ -64,7 +64,13 @@ export const transactionsRouter = createTRPCRouter({
         walletToId: z.string().nullable(),
       }),
     )
-    .mutation(update),
+    .mutation(({ ctx, input }) =>
+      updateTx({
+        prisma: ctx.prisma,
+        userId: ctx.session.user.id,
+        input,
+      }),
+    ),
 
   create: protectedProcedure
     .input(
@@ -78,7 +84,19 @@ export const transactionsRouter = createTRPCRouter({
         walletToId: z.string().nullable(),
       }),
     )
-    .mutation(create),
+    .mutation(({ ctx, input }) =>
+      createTx({
+        prisma: ctx.prisma,
+        userId: ctx.session.user.id,
+        input,
+      }),
+    ),
 
-  delete: protectedProcedure.input(z.string()).mutation(deleteFn),
+  delete: protectedProcedure.input(z.string()).mutation(({ ctx, input }) =>
+    deleteTx({
+      prisma: ctx.prisma,
+      userId: ctx.session.user.id,
+      txId: input,
+    }),
+  ),
 });

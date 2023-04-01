@@ -1,21 +1,16 @@
-import { TRPCError } from "@trpc/server";
 import moment from "moment";
+import { PrismaClient } from "@paxol/db";
 
-import { ContextType } from "../../trpc";
 import { fetchTx, type InputTx } from "./common";
 
 type UpdateParams = {
-  ctx: ContextType;
+  prisma: PrismaClient;
+  userId: string;
   input: InputTx & { id: string };
 };
 
-export async function update({ ctx, input }: UpdateParams) {
-  if (!ctx.session) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-
-  const userId = ctx.session.user.id;
-  const oldTx = await fetchTx(ctx.prisma, input.id, userId);
+export async function updateTx({ prisma, userId, input }: UpdateParams) {
+  const oldTx = await fetchTx(prisma, input.id, userId);
 
   const future = moment().isBefore(input.date);
 
@@ -27,7 +22,7 @@ export async function update({ ctx, input }: UpdateParams) {
     input.walletToId === oldTx.walletToId;
 
   if (canRunSemplifiedMode) {
-    return ctx.prisma.transaction.update({
+    return prisma.transaction.update({
       data: {
         ...input,
         future: future,
@@ -38,7 +33,7 @@ export async function update({ ctx, input }: UpdateParams) {
     });
   }
 
-  await ctx.prisma.$transaction(async (prisma) => {
+  await prisma.$transaction(async (prisma) => {
     if (!oldTx.future) {
       const amountDiff = oldTx.type === "i" ? -oldTx.amount : +oldTx.amount;
 
