@@ -54,7 +54,7 @@ export async function update({ ctx, input }: UpdateParams) {
 
       if (walletAmountTo !== null && oldTx.walletTo)
         await prisma.wallet.update({
-          data: { currentValue: walletAmount },
+          data: { currentValue: walletAmountTo },
           where: { id: oldTx.walletTo.id },
         });
     }
