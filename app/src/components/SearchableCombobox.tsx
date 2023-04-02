@@ -58,6 +58,11 @@ export function SearchableCombobox<T>(props: Props<T>) {
           <Combobox.Button className="w-full flex items-center cursor-pointer">
             <Combobox.Input
               className="cursor-pointer outline-0 flex-1 border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 dark:bg-gray-700 dark:text-white"
+              onClick={(e) => {
+                const txtLength = e.currentTarget.value.length;
+                e.currentTarget.setSelectionRange(txtLength, txtLength);
+                e.currentTarget.focus();
+              }}
               onChange={(event) => setQuery(event.target.value)}
               displayValue={labelMap}
             />
