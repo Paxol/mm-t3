@@ -102,15 +102,13 @@ const DashboardPage = () => {
     throw error;
   }
 
-  const showCategoriesCards = isLoading || (dashboard.data?.length || 0) > 0;
-
   return (
     <div>
       <TansactionDialogContainer />
 
       <div className="flex flex-col lg:mb-4 lg:flex-row lg:space-x-4">
         <Resume />
-        <div className="flex flex-wrap -mr-4 lg:space-y-4 xl:hidden">
+        <div className="flex flex-wrap -mr-4 lg:space-y-4 xl:flex-row xl:space-y-0">
           <Categories type="in" />
           <Categories type="out" />
         </div>
@@ -340,8 +338,8 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
   if (categories.length === 0) return null;
 
   return (
-    <div className="grow min-w-fit basis-1/2 pr-4">
-      <Card className="mb-4 p-4 lg:mb-0">
+    <div className="grow min-w-fit basis-1/2 pr-4 xl:grow-0 xl:basis-0 xl:min-w-[15rem]">
+      <Card className="mb-4 p-4 lg:mb-0 xl:h-full">
         <div className="flex flex-none justify-between items-center mb-3">
           <span className="text-lg font-medium dark:text-white">
             {type === "in" ? "Entrate" : "Uscite"}
