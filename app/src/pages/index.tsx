@@ -75,6 +75,7 @@ const DashboardPage = () => {
     t.dashboard.transactions(undefined, { suspense: false }),
     t.categories.get(undefined, { suspense: false }),
     t.wallets.get(undefined, { suspense: false }),
+    t.dashboard.latestTransactions(undefined, { suspense: false }),
   ]);
 
   const [, setFab] = useAtom(fabAtom);
@@ -109,12 +110,10 @@ const DashboardPage = () => {
 
       <div className="flex flex-col lg:mb-4 lg:flex-row lg:space-x-4">
         <Resume />
-        {showCategoriesCards && (
-          <div className="flex flex-wrap -mr-4">
-            <Categories type="in" />
-            <Categories type="out" />
-          </div>
-        )}
+        <div className="flex flex-wrap -mr-4 lg:space-y-4 xl:hidden">
+          <Categories type="in" />
+          <Categories type="out" />
+        </div>
       </div>
 
       <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
@@ -310,9 +309,12 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
       }
     >();
 
+    const from = moment().startOf("month");
+
     if (transactions) {
       transactions.forEach((t) => {
-        if (!t.category || t.category.type !== type) return;
+        if (!t.category || t.category.type !== type || from.isAfter(t.date))
+          return;
 
         if (categoriesMap.has(t.category.id.toString())) {
           const val = categoriesMap.get(t.category.id.toString());
@@ -338,8 +340,8 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
   if (categories.length === 0) return null;
 
   return (
-    <div className="grow basis-1/2 pr-4">
-      <Card className="lg:h-full mb-4 p-4">
+    <div className="grow min-w-fit basis-1/2 pr-4">
+      <Card className="mb-4 p-4 lg:mb-0">
         <div className="flex flex-none justify-between items-center mb-3">
           <span className="text-lg font-medium dark:text-white">
             {type === "in" ? "Entrate" : "Uscite"}
@@ -353,13 +355,6 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
               className="flex border-b py-3 space-x-3 items-center last:border-b-0 dark:border-gray-700"
             >
               <div className="flex-none">
-                {/* <div
-                className={`w-10 h-10 ${
-                  type === "in" ? "bg-green-400" : "bg-red-400"
-                } text-gray-800 p-1.5 rounded-2xl`}
-                >
-                <RiMoneyEuroCircleLine className="w-full h-full" />
-              </div> */}
                 <div
                   className={`w-4 h-4 ${
                     type === "in" ? "bg-green-400" : "bg-red-400"
@@ -383,21 +378,10 @@ const Categories: FC<{ type?: "in" | "out" }> = ({ type = "in" }) => {
 };
 
 const LatestTransactions: FC = () => {
-  const {
-    data: latestTransactions,
-    isLoading,
-    error,
-  } = api.dashboard.latestTransactions.useQuery();
+  const ctx = api.useContext();
+  const latestTransactions = ctx.dashboard.latestTransactions.getData();
 
-  const [ref] = useAutoAnimate<HTMLDivElement>();
-
-  const showLoading = isLoading;
-  const showError = !showLoading && !!error;
-  const showTxs =
-    !showLoading &&
-    !showError &&
-    latestTransactions &&
-    latestTransactions.length > 0;
+  const showLoading = !latestTransactions;
 
   return (
     <Card className="flex-1 mb-4">
@@ -405,26 +389,18 @@ const LatestTransactions: FC = () => {
         <span className="text-lg font-medium dark:text-white">Transazioni</span>
       </div>
 
-      <div ref={ref} className="flex flex-col">
-        {showLoading && (
-          <span className="bg-gray-700 min-w-[285px] w-full h-[359px] animate-pulse">
+      <div className="flex flex-col w-[19rem]">
+        {showLoading ? (
+          <span className="bg-gray-700 min-w-[18rem] w-full h-[25rem] animate-pulse">
             &nbsp;
           </span>
+        ) : latestTransactions && latestTransactions.length > 0 ? (
+          latestTransactions.map((t) => <Transaction key={t.id} element={t} />)
+        ) : (
+          <span className="text-center m-8 dark:text-white">
+            Non ci sono transazioni recenti
+          </span>
         )}
-
-        {showError && (
-          <span className="dark:text-white">Si è verificato un errore</span>
-        )}
-
-        {showTxs
-          ? latestTransactions.map((t) => (
-              <Transaction key={t.id} element={t} />
-            ))
-          : !showLoading && (
-              <span className="text-center m-8 dark:text-white">
-                Non ci sono transazioni recenti
-              </span>
-            )}
       </div>
     </Card>
   );
