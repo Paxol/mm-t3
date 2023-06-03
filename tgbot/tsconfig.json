@@ -1,0 +1,12 @@
+{
+  "include": ["src"],
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "declaration": false,
+    "esModuleInterop": true,
+    "strict": true,
+    "sourceMap": true,
+    "target": "ES2022", // Node.js 18
+    "outDir": "dist"
+  }
+}

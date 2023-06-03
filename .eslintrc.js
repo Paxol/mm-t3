@@ -12,6 +12,7 @@ const config = {
           "./app/tsconfig.json",
           "./packages/*/tsconfig.json",
           "./scripts/tsconfig.json",
+          "./tgbot/tsconfig.json",
         ],
       },
       rules: {

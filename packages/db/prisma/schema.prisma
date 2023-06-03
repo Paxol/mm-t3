@@ -128,6 +128,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  tgId          Int?   @unique
 
   accounts          Account[]
   sessions          Session[]
@@ -144,4 +145,10 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model TgBotSession {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
 }
