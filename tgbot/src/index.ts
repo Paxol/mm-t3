@@ -1,20 +1,17 @@
-import * as process from "node:process";
 import { PrismaAdapter } from "@grammyjs/storage-prisma";
 import { Bot, session } from "grammy";
 import { prisma } from "@paxol/db";
 
 import * as commands from "./commands";
-import { connectUser } from "./middlewares/connectUser";
+import { env } from "./env";
+import * as menus from "./menus";
+import * as middlewares from "./middlewares";
+import * as questions from "./questions";
 import { MyContext } from "./types";
 
-const token = process.env["BOT_TOKEN"];
-if (!token) {
-  throw new Error(
-    "You have to provide the bot-token from @BotFather via environment variable (BOT_TOKEN)",
-  );
-}
+console.log(menus.createTransaction.middleware.tree());
 
-const bot = new Bot<MyContext>(token);
+const bot = new Bot<MyContext>(env.BOT_TOKEN);
 
 bot.use(
   session({
@@ -23,9 +20,10 @@ bot.use(
   }),
 );
 
-bot.use(connectUser);
-
+middlewares.register(bot);
 commands.register(bot);
+menus.register(bot);
+questions.register(bot);
 
 async function start(): Promise<void> {
   await commands.setSuggested(bot);
@@ -36,9 +34,5 @@ async function start(): Promise<void> {
     },
   });
 }
-
-bot.on("message", (ctx) => {
-  
-});
 
 start();

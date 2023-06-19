@@ -29,8 +29,8 @@ export class OpenAIClient {
     });
   }
 
-  async ask(message: string) {
-    this.askMessages([
+  ask(message: string) {
+    return this.askMessages([
       {
         role: "user",
         content: message,
@@ -46,7 +46,7 @@ export class OpenAIClient {
 
     const requestMessages = this.systemMessage !== undefined ? [] : messages;
 
-    await mutation({
+    return await mutation({
       model: this.model,
       messages: requestMessages,
     });

@@ -7,6 +7,7 @@
     "strict": true,
     "sourceMap": true,
     "target": "ES2022", // Node.js 18
-    "outDir": "dist"
+    "outDir": "dist",
+    "jsx": "react-jsx"
   }
 }
