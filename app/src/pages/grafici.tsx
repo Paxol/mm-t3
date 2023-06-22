@@ -177,10 +177,12 @@ const TransactionsPerCategoryCard = () => {
     to: dateRange.endDate,
   });
 
-  const data = useMemo(() => {
-    if (!categories || !txs) return undefined;
-    return generateData(transactionType, categories, txs);
+  const [data, sum] = useMemo(() => {
+    if (!categories || !txs) return [undefined];
+    const data = generateData(transactionType, categories, txs);
+    const sum = data.reduce((sum, item) => sum + item.value, 0);
 
+    return [data, sum];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionType, dateRange.startDate, dateRange.endDate]);
 
@@ -206,19 +208,26 @@ const TransactionsPerCategoryCard = () => {
         </div>
 
         <div ref={listContainerRef} className="w-full">
-          {data &&
-            data.map((d) => (
-              <CategoryCollapse
-                key={d.id}
-                id={d.id}
-                name={d.name}
-                value={d.value}
-                open={d.id === openCategory}
-                setOpen={() =>
-                  setOpenCategory(d.id === openCategory ? null : d.id)
-                }
-              />
-            ))}
+          {data && (
+            <>
+              <p className="py-3 text-end dark:text-white">
+                Totale: {sum.toFixed(2)} €
+              </p>
+
+              {data.map((d) => (
+                <CategoryCollapse
+                  key={d.id}
+                  id={d.id}
+                  name={d.name}
+                  value={d.value}
+                  open={d.id === openCategory}
+                  setOpen={() =>
+                    setOpenCategory(d.id === openCategory ? null : d.id)
+                  }
+                />
+              ))}
+            </>
+          )}
         </div>
       </div>
     </Card>
