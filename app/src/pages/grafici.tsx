@@ -11,6 +11,7 @@ import { Category } from "@paxol/db";
 import { api } from "~/utils/api";
 import { Card } from "~/components/Card";
 import { fabAtom } from "~/components/FabContainer";
+import { SavingRate } from "~/components/Graphs/SavingRate";
 import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
 import { BalanceCard } from "../components/Graphs/BalanceCard";
@@ -62,11 +63,14 @@ const GraphsCard = () => {
   });
 
   return (
-    <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
+    <div className="flex flex-col space-y-4">
       {transactionByCategory && (
-        <TransactionsPerCategoryCard
-          transactionByCategory={transactionByCategory}
-        />
+        <>
+          <TransactionsPerCategoryCard
+            transactionByCategory={transactionByCategory}
+          />
+          <SavingRate transactionByCategory={transactionByCategory} />
+        </>
       )}
 
       <BalanceCard transactions={transactions} from={startDate} to={endDate} />
