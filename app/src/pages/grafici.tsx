@@ -1,9 +1,12 @@
 import { Suspense, useEffect, useState } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
+import { useQuery } from "@tanstack/react-query";
 import { atom, useAtom, useAtomValue } from "jotai";
 import moment from "moment";
 import Datepicker from "react-tailwindcss-datepicker";
+import { TransactionWithJoins } from "@paxol/api/src/types";
+import { Category } from "@paxol/db";
 
 import { api } from "~/utils/api";
 import { Card } from "~/components/Card";
@@ -52,12 +55,19 @@ const GraphsCard = () => {
     t.categories.get(),
   ]);
 
+  const { data: transactionByCategory } = useQuery({
+    queryKey: ["transactionByCategory", startDate, endDate],
+    queryFn: () => groupTransacionsByCategory(transactions, categories),
+    suspense: true,
+  });
+
   return (
     <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
-      <TransactionsPerCategoryCard
-        transactions={transactions}
-        categories={categories}
-      />
+      {transactionByCategory && (
+        <TransactionsPerCategoryCard
+          transactionByCategory={transactionByCategory}
+        />
+      )}
 
       <BalanceCard transactions={transactions} from={startDate} to={endDate} />
     </div>
@@ -115,3 +125,61 @@ const DatePickerCard = () => {
     </Card>
   );
 };
+
+export type CategoryWithTransactions = {
+  id: string;
+  name: string;
+  value: number;
+  transactions: TransactionWithJoins[];
+};
+
+function groupTransacionsByCategory(
+  transactions: TransactionWithJoins[] | undefined,
+  categories: Category[] | undefined,
+) {
+  if (!transactions || !categories) return { in: [], out: [] };
+
+  const inCategories: CategoryWithTransactions[] = [];
+  const outCategories: CategoryWithTransactions[] = [];
+
+  transactions.forEach((t) => {
+    const category = categories.find((c) => c.id == t.categoryId);
+    if (!category) return;
+
+    const categoryArray = category.type === "in" ? inCategories : outCategories;
+    const categoryWithTx = categoryArray.find((c) => c.id === t.categoryId);
+
+    if (categoryWithTx) {
+      categoryWithTx.value += Number(t.amount);
+      categoryWithTx.transactions.push(t);
+    } else {
+      categoryArray.push({
+        id: category.id,
+        name: category.name,
+        value: Number(t.amount),
+        transactions: [t],
+      });
+    }
+  });
+
+  const sorterFunction = (
+    a: CategoryWithTransactions,
+    b: CategoryWithTransactions,
+  ) => {
+    if (a.value > b.value) return -1;
+    else if (a.value < b.value) return 1;
+
+    if (a.name > b.name) return -1;
+    else if (a.name < b.name) return 1;
+
+    return 0;
+  };
+
+  inCategories.sort(sorterFunction);
+  outCategories.sort(sorterFunction);
+
+  return {
+    in: inCategories,
+    out: outCategories,
+  };
+}
