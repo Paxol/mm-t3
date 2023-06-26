@@ -70,7 +70,7 @@ jobs:
           password: ${{secrets.GITHUB_TOKEN}}
 
       - name: "Install openssl"
-        run: sudo apt-get install libssl-dev
+        run: sudo apt-get update -y && sudo apt-get install -y openssl
 
       - name: "Build Image"
         run: |
