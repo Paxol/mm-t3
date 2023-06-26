@@ -64,6 +64,9 @@ jobs:
           username: ${{github.actor}}
           password: ${{secrets.GITHUB_TOKEN}}
 
+      - name: "Install openssl"
+        run: sudo apt-get install libssl-dev
+
       - name: "Build Image"
         run: |
           docker build . --tag ghcr.io/paxol/mm-t3:latest
