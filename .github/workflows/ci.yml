@@ -48,28 +48,3 @@ jobs:
 
       - name: Check workspaces
         run: pnpm manypkg check
-
-  build-docker-image:
-    needs: build-lint
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: "Login to GitHub Container Registry"
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{github.actor}}
-          password: ${{secrets.GITHUB_TOKEN}}
-
-      - name: "Install openssl"
-        run: sudo apt-get update -y && sudo apt-get install -y openssl
-
-      - name: "Build Image"
-        run: |
-          docker build . --tag ghcr.io/paxol/mm-t3:latest
-          docker push ghcr.io/paxol/mm-t3:latest
