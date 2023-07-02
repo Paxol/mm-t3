@@ -62,18 +62,40 @@ const GraphsCard = () => {
     suspense: true,
   });
 
+  if (!transactionByCategory) return null;
+
   return (
     <div className="flex flex-col space-y-4">
-      {transactionByCategory && (
-        <>
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="lg:flex-grow">
           <TransactionsPerCategoryCard
             transactionByCategory={transactionByCategory}
           />
+        </div>
+        <div className="hidden lg:flex flex-col gap-4">
           <SavingRate transactionByCategory={transactionByCategory} />
-        </>
-      )}
+          <BalanceCard
+            className="hidden lg:flex min-h-[25rem] min-w-[25rem]"
+            transactions={transactions}
+            from={startDate}
+            to={endDate}
+          />
+        </div>
+      </div>
 
-      <BalanceCard transactions={transactions} from={startDate} to={endDate} />
+      <div className="flex flex-col-reverse md:flex-row lg:hidden gap-4">
+        <div className="flex-1">
+          <BalanceCard
+            className="flex min-h-[25rem]"
+            transactions={transactions}
+            from={startDate}
+            to={endDate}
+          />
+        </div>
+        <div>
+          <SavingRate transactionByCategory={transactionByCategory} />
+        </div>
+      </div>
     </div>
   );
 };

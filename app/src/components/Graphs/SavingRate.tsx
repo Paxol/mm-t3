@@ -21,7 +21,7 @@ export const SavingRate: React.FC<{
   const diff = data.in - data.out;
 
   return (
-    <Card className="flex-[2_2_0%] dark:text-white">
+    <Card className="dark:text-white">
       <div className="text-lg font-medium dark:text-white mb-3">
         Tasso di risparmio
       </div>

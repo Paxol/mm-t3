@@ -36,7 +36,7 @@ export const TransactionsPerCategoryCard: React.FC<{
       <div className="flex flex-col overflow-hidden sm:flex-row sm:space-x-4">
         <div className="flex flex-col items-center mt-3">
           <InOutSwitch value={transactionType} onChange={setTransactionType} />
-          <div className="w-[300px] h-[300px]">
+          <div className="w-[250px] h-[250px]">
             {data && (
               <Doughnut
                 data={data}

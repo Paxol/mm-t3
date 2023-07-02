@@ -44,7 +44,8 @@ export const BalanceCard: React.FC<{
   transactions: TransactionWithJoins[] | undefined;
   from: string;
   to: string;
-}> = ({ transactions, from, to }) => {
+  className?: string
+}> = ({ transactions, from, to, className }) => {
   const data = useMemo(() => {
     if (!transactions) return;
 
@@ -52,8 +53,8 @@ export const BalanceCard: React.FC<{
   }, [transactions, from, to]);
 
   return (
-    <Card className="flex-[1_1_0%]">
-      <div className="flex flex-col h-full min-h-[300px]">
+    <Card className={className}>
+      <div className="flex flex-col flex-1">
         <div className="flex items-center justify-between space-x-4 mb-4">
           <span className="text-lg font-medium dark:text-white">Bilancio</span>
         </div>

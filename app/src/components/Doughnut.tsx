@@ -21,15 +21,15 @@ export const Doughnut: React.FC<DoughnutProps> = ({ data, fill, activeIndex }) =
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <PieChart width={300} height={300}>
+      <PieChart width={250} height={250}>
         <Pie
           activeIndex={activeIndex ?? hoverIndex}
           activeShape={ActiveShape}
           data={data}
           cx="50%"
           cy="50%"
-          innerRadius={90}
-          outerRadius={120}
+          innerRadius={80}
+          outerRadius={100}
           fill={fill}
           dataKey="value"
           onMouseEnter={onPieEnter} />

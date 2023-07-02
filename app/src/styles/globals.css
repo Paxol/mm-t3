@@ -43,3 +43,8 @@ input:checked + svg {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Hide outline in charts */
+svg.recharts-surface * {
+  outline: none;
+}
