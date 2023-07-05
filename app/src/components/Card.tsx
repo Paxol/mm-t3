@@ -1,19 +1,35 @@
-import { FC, PropsWithChildren } from "react";
-import classNames from "classnames";
+import React, { FC, PropsWithChildren } from "react";
+import { VariantProps, cva } from "class-variance-authority";
 
-const paddingRegex = /(?<=\s|^)p[t|r|b|l|x|y]*-\S*/;
+import { cn } from "~/utils/cn";
 
-export const Card: FC<PropsWithChildren<{ className?: string }>> = ({
+const cardVariants = cva(
+  "bg-white dark:bg-gray-800 flex rounded-md shadow-md px-6 py-4",
+  {
+    variants: {
+      orientation: {
+        vertical: "flex-col",
+        horizontal: "flex-row",
+      },
+    },
+    defaultVariants: {
+      orientation: "vertical",
+    },
+  },
+);
+
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
+
+export const Card: FC<PropsWithChildren<CardProps>> = ({
   className,
+  orientation,
   children,
 }) => {
-  const hasPadding = paddingRegex.test(className ?? "");
-
-  const classes = classNames({
-    "bg-white dark:bg-gray-800 flex flex-col rounded-md shadow-md": true,
-    [className ?? ""]: className ? true : false,
-    "px-6 py-4": !hasPadding,
-  });
-
-  return <div className={classes}>{children}</div>;
+  return (
+    <div className={cn(cardVariants({ orientation, className }))}>
+      {children}
+    </div>
+  );
 };

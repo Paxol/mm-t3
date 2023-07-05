@@ -21,7 +21,7 @@ export const PageLayout: FC<
   return (
     <main className="mx-auto flex flex-col items-center justify-center min-h-screen p-4">
       <div className="flex-auto w-full pb-20">
-        <div className="container mx-auto relative">
+        <div className="sm:container mx-auto relative">
           <h1 className="text-2xl font-semibold my-5 text-center text-white">
             {name}
           </h1>
