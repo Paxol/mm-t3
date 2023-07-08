@@ -10,6 +10,7 @@ import { Button } from "../Button";
 import { Input } from "../Input";
 import { SearchableCombobox } from "../SearchableCombobox";
 import { dialogOpenAtom } from "./TansactionDialogContainer";
+import { Select } from "../Select";
 
 export type TransactionDialogData =
   | {
@@ -42,8 +43,7 @@ export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
     ?.sort((a, b) => (b.name > a.name ? -1 : 1));
 
   const defaultValues = getTxDefaults(data, wallets, categories);
-  console.log("defaultValues", defaultValues);
-
+  
   const [wallet, setWallet] = useState<Wallet | undefined>(
     defaultValues?.wallet,
   );
@@ -129,8 +129,7 @@ export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
         {/* Type */}
         <div>
           <small className="text-black dark:text-white">Tipo</small>
-          <Input
-            select
+          <Select
             value={form.type}
             onValueChange={(value) => {
               setForm((prev) => ({
@@ -144,7 +143,7 @@ export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
             <option value="i">Entrata</option>
             <option value="o">Uscita</option>
             <option value="t">Trasferimento</option>
-          </Input>
+          </Select>
         </div>
 
         {/* Wallet */}
@@ -277,8 +276,6 @@ function getTxDefaults(
   wallets: Wallet[] | undefined,
   categories: Category[] | undefined,
 ) {
-  console.log("getTxDefaults :: data", data);
-
   if (!data) return null;
 
   return {
