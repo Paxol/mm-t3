@@ -11,36 +11,36 @@ datasource db {
 }
 
 model SavedTransaction {
-  id           String  @id @default(cuid())
-  amount       Float
-  description  String
-  type         String
-  categoryId   String?
-  walletId     String
-  walletToId   String?
-  userid       String
+  id          String  @id @default(cuid())
+  amount      Float
+  description String
+  type        String
+  categoryId  String?
+  walletId    String
+  walletToId  String?
+  userid      String
 
   user     User      @relation(fields: [userid], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id])
-  wallet   Wallet   @relation("st-w-w", fields: [walletId], references: [id])
+  wallet   Wallet    @relation("st-w-w", fields: [walletId], references: [id])
   walletTo Wallet?   @relation("st-w-wt", fields: [walletToId], references: [id])
 }
 
 model Transaction {
-  id           String   @id @default(cuid())
-  amount       Float
-  date         DateTime
-  description  String
-  type         String
-  future       Boolean  @default(false)
-  categoryId   String?
-  walletId     String
-  walletToId   String?
-  userid       String
+  id          String   @id @default(cuid())
+  amount      Float
+  date        DateTime
+  description String
+  type        String
+  future      Boolean  @default(false)
+  categoryId  String?
+  walletId    String
+  walletToId  String?
+  userid      String
 
   user     User      @relation(fields: [userid], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id])
-  wallet   Wallet   @relation("t-w-w", fields: [walletId], references: [id])
+  wallet   Wallet    @relation("t-w-w", fields: [walletId], references: [id])
   walletTo Wallet?   @relation("t-w-wt", fields: [walletToId], references: [id])
 }
 
@@ -57,6 +57,7 @@ model Category {
   user              User               @relation(fields: [userid], references: [id], onDelete: Cascade)
   SavedTransactions SavedTransaction[]
   Transactions      Transaction[]
+  Budgets           Budget[]
 }
 
 model Wallet {
@@ -76,6 +77,22 @@ model Wallet {
 
   Transaction_wallet   Transaction[] @relation("t-w-w")
   Transaction_walletTo Transaction[] @relation("t-w-wt")
+}
+
+enum BudgetType {
+  WEEKLY
+  MONTHLY
+}
+
+model Budget {
+  id         String     @id @default(cuid())
+  type       BudgetType
+  amount     Float
+  categoryId String
+  userId     String
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Necessary for Next auth
@@ -118,6 +135,7 @@ model User {
   Transactions      Transaction[]
   Categories        Category[]
   Wallets           Wallet[]
+  Budget            Budget[]
 }
 
 model VerificationToken {

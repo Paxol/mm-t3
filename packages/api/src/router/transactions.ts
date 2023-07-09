@@ -12,42 +12,26 @@ export const transactionsRouter = createTRPCRouter({
       z.object({
         from: z.string().datetime(),
         to: z.string().datetime(),
+        categories: z.string().array().optional(),
       }),
     )
     .query(async ({ ctx, input }): Promise<TransactionWithJoins[]> => {
       return await ctx.prisma.transaction.findMany({
-        select: {
-          id: true,
-          amount: true,
-          date: true,
-          description: true,
-          type: true,
-          future: true,
-          categoryId: true,
-          walletId: true,
-          walletToId: true,
-          userid: true,
-
+        include: {
           category: true,
           wallet: true,
           walletTo: true,
         },
         where: {
-          AND: [
-            {
-              userid: ctx.session.user.id,
-            },
-            {
-              date: {
-                gte: new Date(input.from),
-                lte: new Date(input.to),
-              },
-            },
-          ],
+          userid: ctx.session.user.id,
+          categoryId: input.categories ? { in: input.categories } : undefined,
+
+          date: {
+            gte: new Date(input.from),
+            lte: new Date(input.to),
+          },
         },
-        orderBy: {
-          date: "desc",
-        },
+        orderBy: { date: "desc" },
       });
     }),
 

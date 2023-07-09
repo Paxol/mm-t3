@@ -18,13 +18,17 @@ const Content: FC<PropsWithChildren> = ({ children }) => {
   return (
     <ErrorBoundary
       onReset={reset}
-      fallbackRender={({ resetErrorBoundary }) => (
-        <div className="my-4 flex flex-col items-center dark:text-white">
-          <p className="mb-4">Si è verificato un errore</p>
+      fallbackRender={({ resetErrorBoundary, error }) => {
+        console.error(error);
 
-          <Button onClick={resetErrorBoundary}>Riprova</Button>
-        </div>
-      )}
+        return (
+          <div className="my-4 flex flex-col items-center dark:text-white">
+            <p className="mb-4">Si è verificato un errore</p>
+
+            <Button onClick={resetErrorBoundary}>Riprova</Button>
+          </div>
+        );
+      }}
     >
       {children}
     </ErrorBoundary>

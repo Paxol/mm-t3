@@ -3,7 +3,7 @@ import Link from "next/link";
 import classNames from "classnames";
 import { useAtomValue } from "jotai";
 import { useSession } from "next-auth/react";
-import { BsTag } from "react-icons/bs";
+import { TbMoneybag } from "react-icons/tb";
 import { HiOutlineChartPie } from "react-icons/hi";
 import { RiArrowLeftRightLine, RiDashboard2Line } from "react-icons/ri";
 
@@ -47,9 +47,9 @@ const pages = [
   //   page: "/conti",
   // },
   {
-    name: "Categorie",
-    icon: <BsTag className="h-5 w-full" />,
-    page: "/categorie",
+    name: "Budget",
+    icon: <TbMoneybag className="h-5 w-full" />,
+    page: "/budget",
   },
   {
     name: "Transazioni",

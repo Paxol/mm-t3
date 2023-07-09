@@ -7,13 +7,13 @@ const cardVariants = cva(
   "bg-white dark:bg-gray-800 flex rounded-md shadow-md px-6 py-4",
   {
     variants: {
-      orientation: {
+      direction: {
         vertical: "flex-col",
         horizontal: "flex-row",
       },
     },
     defaultVariants: {
-      orientation: "vertical",
+      direction: "vertical",
     },
   },
 );
@@ -24,11 +24,12 @@ export interface CardProps
 
 export const Card: FC<PropsWithChildren<CardProps>> = ({
   className,
-  orientation,
+  direction,
   children,
+  ...rest
 }) => {
   return (
-    <div className={cn(cardVariants({ orientation, className }))}>
+    <div className={cn(cardVariants({ direction, className }))} {...rest}>
       {children}
     </div>
   );

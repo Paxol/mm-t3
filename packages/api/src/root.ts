@@ -1,4 +1,5 @@
 import { authRouter } from "./router/auth";
+import { budgetsRouter } from "./router/budgets";
 import { categoriesRouter } from "./router/categories";
 import { dashboardRouter } from "./router/dashboard";
 import { transactionsRouter } from "./router/transactions";
@@ -8,6 +9,7 @@ import { createTRPCRouter } from "./trpc";
 export const appRouter = createTRPCRouter({
   dashboard: dashboardRouter,
   categories: categoriesRouter,
+  budgets: budgetsRouter,
   transactions: transactionsRouter,
   wallets: walletsRouter,
   auth: authRouter,

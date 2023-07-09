@@ -299,7 +299,7 @@ const BalanceCard = (props: BalanceCardProps) => {
   return (
     <Card
       className={cn("gap-4 items-center dark:text-white p-3", props.className)}
-      orientation="horizontal"
+      direction="horizontal"
     >
       {props.icon}
       <div className="flex flex-col gap-1">

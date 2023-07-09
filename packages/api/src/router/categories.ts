@@ -8,6 +8,7 @@ export const categoriesRouter = createTRPCRouter({
       where: {
         userid: ctx.session.user.id,
       },
+      orderBy: [{ type: "asc" }, { name: "asc" }, { id: "asc" }],
     });
   }),
 });
