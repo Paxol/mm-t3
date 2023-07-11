@@ -1,17 +1,24 @@
 import React, { useMemo } from "react";
 import moment from "moment";
 import { TransactionWithJoins } from "@paxol/api/src/types";
+import { Wallet } from "@paxol/db";
 
 import { Card } from "~/components/Card";
 import { GradientAreaChart } from "~/components/GradientAreaChart";
 
 const generateBalanceData = (
   txs: TransactionWithJoins[],
+  wallets: Wallet[],
   start: moment.Moment,
   end: moment.Moment,
 ) => {
-  const balances = [] as number[];
+  const cashflow = [] as number[];
   const days = moment.min(end, moment()).diff(start, "days");
+
+  const currentBalance = wallets.reduce(
+    (acc, item) => (item.type === 1 ? acc : acc + item.currentValue),
+    0,
+  );
 
   for (let i = 0; i < txs.length; i++) {
     const tx = txs[i];
@@ -19,20 +26,17 @@ const generateBalanceData = (
     if (!tx || tx.type === "t" || tx.future) continue;
 
     const dayIndex = moment(tx.date).diff(start, "days");
-    if (dayIndex < 0 || dayIndex >= days) continue;
+    if (dayIndex < 0 || dayIndex > days) continue;
 
     const delta = tx.type === "i" ? tx.amount : -tx.amount;
-    balances[dayIndex] = (balances[dayIndex] ?? 0) + delta;
+    cashflow[dayIndex] = (cashflow[dayIndex] ?? 0) + delta;
   }
 
-  if (!balances[0]) balances[0] = 0;
+  const balances = Array<number>(days + 1);
+  balances[days] = currentBalance;
 
-  for (let i = 1; i < days + 1; i++) {
-    const prevBalance = balances[i - 1] ?? 0;
-    const balance = balances[i] ?? 0;
-
-    balances[i] = prevBalance + balance;
-  }
+  for (let i = days; i > 0; i--)
+    balances[i - 1] = (balances.at(i) ?? 0) - (cashflow.at(i) ?? 0);
 
   return balances.map((balance, idx) => ({
     name: moment(start).add(idx, "days").format("DD"),
@@ -42,15 +46,16 @@ const generateBalanceData = (
 
 export const BalanceCard: React.FC<{
   transactions: TransactionWithJoins[] | undefined;
+  wallets: Wallet[] | undefined;
   from: string;
   to: string;
-  className?: string
-}> = ({ transactions, from, to, className }) => {
+  className?: string;
+}> = ({ transactions, wallets, from, to, className }) => {
   const data = useMemo(() => {
-    if (!transactions) return;
-
-    return generateBalanceData(transactions, moment(from), moment(to));
-  }, [transactions, from, to]);
+    return !transactions || !wallets
+      ? undefined
+      : generateBalanceData(transactions, wallets, moment(from), moment(to));
+  }, [transactions, wallets, from, to]);
 
   return (
     <Card className={className}>

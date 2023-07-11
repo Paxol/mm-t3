@@ -48,13 +48,15 @@ export default Grafici;
 const GraphsCard = () => {
   const { startDate, endDate } = useAtomValue(dateRangeAtom);
 
-  const [{ data: transactions }, { data: categories }] = api.useQueries((t) => [
-    t.transactions.getRange({
-      from: startDate,
-      to: endDate,
-    }),
-    t.categories.get(),
-  ]);
+  const [{ data: transactions }, { data: categories }, { data: wallets }] =
+    api.useQueries((t) => [
+      t.transactions.getRange({
+        from: startDate,
+        to: endDate,
+      }),
+      t.categories.get(),
+      t.wallets.get(),
+    ]);
 
   const { data: transactionByCategory } = useQuery({
     queryKey: ["transactionByCategory", startDate, endDate],
@@ -77,6 +79,7 @@ const GraphsCard = () => {
           <BalanceCard
             className="hidden lg:flex min-h-[25rem] min-w-[25rem]"
             transactions={transactions}
+            wallets={wallets}
             from={startDate}
             to={endDate}
           />
@@ -88,6 +91,7 @@ const GraphsCard = () => {
           <BalanceCard
             className="flex min-h-[25rem]"
             transactions={transactions}
+            wallets={wallets}
             from={startDate}
             to={endDate}
           />
