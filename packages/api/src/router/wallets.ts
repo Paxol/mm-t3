@@ -24,4 +24,23 @@ export const walletsRouter = createTRPCRouter({
         },
       });
     }),
+
+  add: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        type: z.number(),
+        initialValue: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.prisma.wallet.create({
+        data: {
+          ...input,
+          currentValue: input.initialValue,
+          deleted: false,
+          userid: ctx.session.user.id,
+        },
+      });
+    }),
 });

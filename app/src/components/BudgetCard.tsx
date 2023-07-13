@@ -52,7 +52,7 @@ export const BudgetCard: FC<BudgetProps> = ({
             {value.toFixed(2)} / {amount.toFixed(2)} €
           </div>
         </div>
-        <TwButton variant="secondary" size="icon" onClick={onEditClick}>
+        <TwButton variant="secondary" size="roundicon" onClick={onEditClick}>
           <MdOutlineEdit className="h-4 w-4" />
         </TwButton>
       </div>
