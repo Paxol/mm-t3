@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import moment from "moment";
 import { PrismaClient } from "@paxol/db";
 
@@ -11,6 +12,12 @@ type CreateParams = {
 
 export async function createTx({ input, prisma, userId }: CreateParams) {
   const future = moment().isBefore(input.date);
+
+  if (future)
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Future transactions, not implemented",
+    });
 
   let walletAmount = 0;
   let walletToAmount: number | null = null;
