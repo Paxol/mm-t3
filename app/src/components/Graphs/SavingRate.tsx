@@ -11,8 +11,8 @@ export const SavingRate: React.FC<{
 }> = ({ transactionByCategory }) => {
   const data = useMemo(
     () => ({
-      in: transactionByCategory.in.reduce((acc, item) => acc + item.value, 0),
-      out: transactionByCategory.out.reduce((acc, item) => acc + item.value, 0),
+      in: transactionByCategory.in.filter(item => !(item.atBalance === false)).reduce((acc, item) => acc + item.value, 0),
+      out: transactionByCategory.out.filter(item => !(item.atBalance === false)).reduce((acc, item) => acc + item.value, 0),
     }),
     [transactionByCategory],
   );

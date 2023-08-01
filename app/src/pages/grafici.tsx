@@ -160,6 +160,7 @@ export type CategoryWithTransactions = {
   id: string;
   name: string;
   value: number;
+  atBalance: boolean | null;
   transactions: TransactionWithJoins[];
 };
 
@@ -186,6 +187,7 @@ function groupTransacionsByCategory(
       categoryArray.push({
         id: category.id,
         name: category.name,
+        atBalance: category.atBalance,
         value: Number(t.amount),
         transactions: [t],
       });
