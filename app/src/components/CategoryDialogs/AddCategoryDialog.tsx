@@ -5,23 +5,23 @@ import { MdCheck } from "react-icons/md";
 import { api } from "~/utils/api";
 import { DialogTitle } from "../Dialog";
 import { TwButton } from "../TwButton";
-import { WalletForm, WalletFormData } from "./WalletForm";
+import { CategoryForm, CategoryFormData } from "./CategoryForm";
 
-export const AddWalletDialog: FC<{onClose: () => void}> = ({onClose}) => {
+export const AddCategoryDialog: FC<{onClose: () => void}> = ({onClose}) => {
   const ctx = api.useContext();
-  const add = api.wallets.add.useMutation();
+  const add = api.categories.add.useMutation();
 
   const handleSubmit = useCallback(
-    async (data: WalletFormData) => {
+    async (data: CategoryFormData) => {
       try {
         await add.mutateAsync(data);
-        ctx.wallets.get.invalidate();
+        ctx.categories.get.invalidate();
         onClose();
       } catch {
         /* empty */
       }
     },
-    [add, ctx.wallets.get, onClose],
+    [add, ctx.categories.get, onClose],
   );
 
   return (
@@ -32,7 +32,7 @@ export const AddWalletDialog: FC<{onClose: () => void}> = ({onClose}) => {
       >
         Aggiungi conto
       </DialogTitle>
-      <WalletForm className="pt-2" onSubmit={handleSubmit}>
+      <CategoryForm className="pt-2" onSubmit={handleSubmit}>
         {add.isError && (
           <div className="mt-2">Si è verificato un errore, riprova</div>
         )}
@@ -56,7 +56,7 @@ export const AddWalletDialog: FC<{onClose: () => void}> = ({onClose}) => {
             <TwButton>Aggiungi</TwButton>
           )}
         </div>
-      </WalletForm>
+      </CategoryForm>
     </>
   );
 };

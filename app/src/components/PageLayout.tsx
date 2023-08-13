@@ -5,6 +5,7 @@ import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import { BiWalletAlt } from "react-icons/bi";
+import { BsTag } from "react-icons/bs";
 import { HiOutlineChartPie } from "react-icons/hi";
 import { RiArrowLeftRightLine, RiDashboard2Line } from "react-icons/ri";
 import { TbMoneybag } from "react-icons/tb";
@@ -18,6 +19,7 @@ import { LoginPage } from "./LoginPage";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
 import { TwButton } from "./TwButton";
 import { AddWalletDialog } from "./WalletDialogs/AddWalletDialog";
+import { AddCategoryDialog } from "./CategoryDialogs/AddCategoryDialog";
 
 export const PageLayout: FC<
   PropsWithChildren<{ name: string; protectedPage: boolean }>
@@ -168,13 +170,13 @@ const Profile: FC<Partial<Session["user"]>> = ({ name, image, email }) => {
             {/* <TwButton variant="ghost" className="justify-start" onClick={() => setDialog({type: "none", open: true})}>
               <MdEdit className="mr-2 h-4 w-4" /> Modifica Conto
             </TwButton> */}
-            {/* <TwButton
+            <TwButton
               variant="ghost"
               className="justify-start"
               onClick={() => setDialog({ type: "add-category", open: true })}
             >
               <BsTag className="mr-2 h-4 w-4" /> Aggiungi Categoria
-            </TwButton> */}
+            </TwButton>
             {/* <TwButton variant="ghost" className="justify-start" onClick={() => setDialog({type: "none", open: true})}>
               <MdEdit className="mr-2 h-4 w-4" /> Modifica Categoria
             </TwButton> */}
@@ -196,6 +198,7 @@ const DialogManager = () => {
   return (
     <Dialog open={dialog.open} onClose={close}>
       {dialog.type === "add-wallet" && <AddWalletDialog onClose={close} />}
+      {dialog.type === "add-category" && <AddCategoryDialog onClose={close} />}
     </Dialog>
   );
 };
