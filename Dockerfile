@@ -28,5 +28,7 @@ EXPOSE 3000
 
 ENV PORT 3000
 
+HEALTHCHECK CMD curl --fail "https://3000.code.mpxl.dev/api/trpc/health.check" || exit 1     
+
 WORKDIR /mm-t3/app
 CMD ["node", "server.js"]
