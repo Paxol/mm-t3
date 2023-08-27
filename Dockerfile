@@ -13,6 +13,8 @@ RUN pnpm install
 RUN pnpm build --filter=nextjs
 
 FROM base AS runner
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /mm-t3
 
 ENV NODE_ENV production
@@ -28,7 +30,7 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-HEALTHCHECK CMD curl --fail "https://3000.code.mpxl.dev/api/trpc/health.check" || exit 1     
+HEALTHCHECK CMD curl --fail "http://localhost:3000/api/trpc/health.check" || exit 1     
 
 WORKDIR /mm-t3/app
 CMD ["node", "server.js"]
