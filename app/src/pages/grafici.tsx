@@ -111,6 +111,7 @@ export const dateRangeAtom = atom({
 
 const DatePickerCard = () => {
   const [range, setRange] = useAtom(dateRangeAtom);
+  console.log(JSON.stringify(range));
   const [nullishRange, setNullishRange] = useState<{
     startDate: Date | null;
     endDate: Date | null;
@@ -145,8 +146,8 @@ const DatePickerCard = () => {
           toggleClassName="dark:text-white"
           displayFormat="DD/MM/YYYY"
           onChange={(v) => {
-            const startDate = v?.startDate ? new Date(v.startDate) : null;
-            const endDate = v?.endDate ? new Date(v.endDate) : null;
+            const startDate = v?.startDate ? moment(new Date(v.startDate)).startOf("day").toDate() : null;
+            const endDate = v?.endDate ? moment(new Date(v.endDate)).endOf("day").toDate() : null;
 
             setNullishRange({ startDate, endDate });
           }}
