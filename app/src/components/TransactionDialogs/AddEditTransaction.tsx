@@ -140,8 +140,8 @@ export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
               setCategory(undefined);
             }}
           >
-            <option value="i">Entrata</option>
             <option value="o">Uscita</option>
+            <option value="i">Entrata</option>
             <option value="t">Trasferimento</option>
           </Select>
         </div>
