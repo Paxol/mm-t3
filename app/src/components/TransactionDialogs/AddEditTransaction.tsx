@@ -56,7 +56,7 @@ export const AddEditTransaction: React.FC<TransactionDialogData> = (data) => {
 
   const [form, setForm, handleFormChange] = useForm<FormType>(
     defaultValues || {
-      type: "i",
+      type: "o",
       amount: 0,
       date: moment().format("YYYY-MM-DD"),
       time: moment().format("HH:mm"),
