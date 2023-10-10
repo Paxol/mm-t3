@@ -286,7 +286,7 @@ function getTxDefaults(
     date: moment(data.transaction?.date).format("YYYY-MM-DD"),
     time: moment(data.transaction?.date).format("HH:mm"),
     description: data.transaction?.description ?? "",
-    type: data.transaction?.type ?? "i",
+    type: data.transaction?.type ?? "o",
   };
 }
 
