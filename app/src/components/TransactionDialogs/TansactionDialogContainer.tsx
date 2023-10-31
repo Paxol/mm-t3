@@ -1,8 +1,13 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Dialog as HeadlessUIDialog, Transition } from "@headlessui/react";
-import { atom, useAtom, useAtomValue } from "jotai";
+import { atom, useAtom } from "jotai";
+import moment from "moment";
 
-import { AddEditTransaction, TransactionDialogData } from "./AddEditTransaction";
+import {
+  AddEditTransaction,
+  TransactionDialogData,
+} from "./AddEditTransaction";
 import { DeleteTransaction, DeleteTransactionData } from "./DeleteTransaction";
 
 type DialogData = TransactionDialogData | DeleteTransactionData;
@@ -24,9 +29,31 @@ export const dialogActionAtom = atom(
   },
 );
 
+const completedTxTemplateSet = new Set<string>();
+
 export const TansactionDialogContainer = () => {
   const [isOpen, setIsOpen] = useAtom(dialogOpenAtom);
-  const data = useAtomValue(dialogDataAtom);
+  const [data, setData] = useAtom(dialogDataAtom);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const txTemplateString = searchParams.get("tx");
+    if (!txTemplateString || completedTxTemplateSet.has(txTemplateString))
+      return;
+
+    completedTxTemplateSet.add(txTemplateString);
+    const txTemplate = JSON.parse(txTemplateString);
+    setData({
+      type: "AddTransaction",
+      transaction: {
+        amount: txTemplate.amount ? Number(txTemplate.amount) : undefined,
+        description: txTemplate.description,
+        date: txTemplate.date ? moment(txTemplate.date).toDate() : undefined,
+        type: txTemplate.type,
+      },
+    });
+    setIsOpen(true);
+  }, [searchParams, setData, setIsOpen]);
 
   return (
     <Transition show={isOpen} as={Fragment}>
@@ -70,9 +97,15 @@ export const TansactionDialogContainer = () => {
             leaveTo="opacity-0 scale-95"
           >
             <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-2xl">
-              {data?.type === "AddTransaction" && <AddEditTransaction {...data} />}
-              {data?.type === "EditTransaction" && <AddEditTransaction {...data} />}
-              {data?.type === "DeleteTransaction" && <DeleteTransaction {...data} />}
+              {data?.type === "AddTransaction" && (
+                <AddEditTransaction {...data} />
+              )}
+              {data?.type === "EditTransaction" && (
+                <AddEditTransaction {...data} />
+              )}
+              {data?.type === "DeleteTransaction" && (
+                <DeleteTransaction {...data} />
+              )}
             </div>
           </Transition.Child>
         </div>
