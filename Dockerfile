@@ -1,4 +1,4 @@
-FROM node:lts-slim AS base
+FROM node:20.11-slim AS base
 
 RUN npm install -g pnpm
 
