@@ -5,7 +5,7 @@ import { TransactionWithJoins } from "@paxol/api/src/types";
 import { Card } from "~/components/Card";
 import { Doughnut } from "~/components/Doughnut";
 import { Transaction } from "~/components/Transaction";
-import { CategoryWithTransactions } from "~/pages/grafici";
+import { CategoryWithTransactions } from "~/utils/groupTransacionsByCategory";
 
 type InOut = "in" | "out";
 

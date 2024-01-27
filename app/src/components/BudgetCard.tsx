@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import type { Budget } from "@prisma/client";
+import type { Budget } from "@paxol/db";
 import { MdOutlineEdit } from "react-icons/md";
 
 import { Progress } from "~/components/Progress";

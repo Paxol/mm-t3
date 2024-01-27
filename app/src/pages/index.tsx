@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useMemo } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
-import type { Category, Wallet } from "@prisma/client";
+import type { Category, Wallet } from "@paxol/db";
 import { useAtom } from "jotai";
 import moment from "moment";
 import { BsPiggyBank } from "react-icons/bs";
