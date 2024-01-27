@@ -1,6 +1,8 @@
 FROM node:20.11-slim AS base
-
+RUN apt-get update && apt-get install -y --no-install-recommends curl openssl && rm -rf /var/lib/apt/lists/*
 RUN npm install -g pnpm
+
+ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 
 FROM base as builder
 
@@ -13,7 +15,6 @@ RUN pnpm install
 RUN pnpm build --filter=nextjs
 
 FROM base AS runner
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /mm-t3
 
