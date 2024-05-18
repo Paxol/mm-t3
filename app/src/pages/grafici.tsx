@@ -12,7 +12,7 @@ import { fabAtom } from "~/components/FabContainer";
 import { SavingRate } from "~/components/Graphs/SavingRate";
 import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
-import { BalanceCard } from "../components/Graphs/BalanceCard";
+import { FlowCard } from "../components/Graphs/FlowCard";
 import { TransactionsPerCategoryCard } from "../components/Graphs/TransactionsPerCategoryCard";
 import { groupTransacionsByCategory } from "~/utils/groupTransacionsByCategory";
 
@@ -47,14 +47,13 @@ export default Grafici;
 const GraphsCard = () => {
   const { startDate, endDate } = useAtomValue(dateRangeAtom);
 
-  const [{ data: transactions }, { data: categories }, { data: wallets }] =
+  const [{ data: transactions }, { data: categories }] =
     api.useQueries((t) => [
       t.transactions.getRange({
         from: startDate,
         to: endDate,
       }),
-      t.categories.get(),
-      t.wallets.get(),
+      t.categories.get()
     ]);
 
   const { data: transactionByCategory } = useQuery({
@@ -75,10 +74,9 @@ const GraphsCard = () => {
         </div>
         <div className="hidden lg:flex flex-col gap-4">
           <SavingRate transactionByCategory={transactionByCategory} />
-          <BalanceCard
+          <FlowCard
             className="hidden lg:flex min-h-[25rem] min-w-[25rem]"
             transactions={transactions}
-            wallets={wallets}
             from={startDate}
             to={endDate}
           />
@@ -87,10 +85,9 @@ const GraphsCard = () => {
 
       <div className="flex flex-col-reverse md:flex-row lg:hidden gap-4">
         <div className="flex-1">
-          <BalanceCard
+          <FlowCard
             className="flex min-h-[25rem]"
             transactions={transactions}
-            wallets={wallets}
             from={startDate}
             to={endDate}
           />
