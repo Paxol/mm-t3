@@ -1,6 +1,7 @@
 {
   "name": "create-t3-turbo",
   "private": true,
+  "packageManager": "pnpm@9.1.4",
   "scripts": {
     "build": "turbo build",
     "clean": "rm -rf node_modules",
