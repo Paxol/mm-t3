@@ -31,7 +31,7 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-HEALTHCHECK CMD curl --fail "http://localhost:3000/api/trpc/health.check" || exit 1
+HEALTHCHECK CMD curl --proxy-insecure --fail "http://localhost:3000/api/trpc/health.check" || exit 1
 
 WORKDIR /mm-t3/app
 CMD ["node", "server.js"]
