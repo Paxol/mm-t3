@@ -1,20 +1,18 @@
-import React, { Suspense, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import moment from "moment";
-import { MdAdd } from "react-icons/md";
 import { TransactionWithJoins } from "@paxol/api/src/types";
 import { Budget, Category } from "@paxol/db";
 
 import { api } from "~/utils/api";
+import { BudgetCard } from "~/components/BudgetCard";
 import { AddBudgetDialog } from "~/components/BudgetDialogs/AddBudgetDialog";
+import { EditBudgetDialog, EditBudgetItemAtom } from "~/components/BudgetDialogs/EditBudgetDialog";
 import { fabAtom } from "~/components/FabContainer";
 import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
-import { BudgetCard } from "../components/BudgetCard";
-import { EditBudgetDialog } from "../components/BudgetDialogs/EditBudgetDialog";
-import { Card } from "../components/Card";
 
 const Home: NextPage = () => {
   const [fab, setFab] = useAtom(fabAtom);
@@ -62,10 +60,7 @@ const BudgetsPage = () => {
     [getQuery.data, txsQuery.data],
   );
 
-  const [editing, setEditing] = useState<BudgetWithCategory>();
-  const [showEditDialog, setShowEditDialog] = useState(false);
-
-  const [showAddDialog, setShowAddDialog] = useState(false);
+  const setEditing = useSetAtom(EditBudgetItemAtom)
 
   return (
     <>
@@ -79,34 +74,14 @@ const BudgetsPage = () => {
             value={el.value}
             onEditClick={() => {
               setEditing(el);
-              setShowEditDialog(true);
             }}
           />
         ))}
 
-        <Card
-          className="flex items-center justify-center gap-2 cursor-pointer dark:text-white"
-          direction="horizontal"
-          role="button"
-          onClick={() => setShowAddDialog(true)}
-        >
-          <MdAdd className="h-4 w-4" />
-          <span>Aggiungi</span>
-        </Card>
+        <AddBudgetDialog />
       </div>
 
-      <AddBudgetDialog
-        open={showAddDialog}
-        onClose={() => setShowAddDialog(false)}
-      />
-
-      {editing && (
-        <EditBudgetDialog
-          open={showEditDialog}
-          onClose={() => setShowEditDialog(false)}
-          item={editing}
-        />
-      )}
+      <EditBudgetDialog />
     </>
   );
 };

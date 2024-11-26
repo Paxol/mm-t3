@@ -1,4 +1,5 @@
-import React, { FC, useCallback } from "react";
+import React, { FC, useCallback, useEffect, useState } from "react";
+import { atom, useAtomValue } from "jotai";
 import { Budget, Category } from "@paxol/db";
 
 import { api } from "~/utils/api";
@@ -13,15 +14,19 @@ type BudgetWithCategory = Budget & {
   category: Category;
 };
 
-type DialogProps = {
-  open: boolean;
-  onClose: () => void;
-  item: BudgetWithCategory;
-};
-export const EditBudgetDialog: FC<DialogProps> = ({ open, onClose, item }) => {
+export const EditBudgetItemAtom = atom<BudgetWithCategory | null>(null);
+
+export const EditBudgetDialog: FC = () => {
   const ctx = api.useContext();
   const edit = api.budgets.update.useMutation();
   const remove = api.budgets.remove.useMutation();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const item = useAtomValue(EditBudgetItemAtom);
+
+  useEffect(() => {
+    if (item) setIsOpen(true);
+  }, [item]);
 
   const handleSubmit = useCallback(
     async (data: BudgetFormData) => {
@@ -35,20 +40,24 @@ export const EditBudgetDialog: FC<DialogProps> = ({ open, onClose, item }) => {
       });
 
       ctx.budgets.get.invalidate();
-      onClose();
+      setIsOpen(false);
     },
-    [ctx.budgets.get, edit, onClose],
+    [ctx.budgets.get, edit],
   );
 
   const handleDelete = useCallback(async () => {
+    if (!item) return;
+
     await remove.mutateAsync({ id: item.id });
 
     ctx.budgets.get.invalidate();
-    onClose();
-  }, [remove, item.id, ctx.budgets.get, onClose]);
+    setIsOpen(false);
+  }, [remove, item?.id, ctx.budgets.get]);
+
+  if (!item) return null;
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={isOpen} onClose={() => setIsOpen(false)}>
       <DialogTitle
         className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
         as="h3"
@@ -61,7 +70,11 @@ export const EditBudgetDialog: FC<DialogProps> = ({ open, onClose, item }) => {
             Elimina
           </TwButton>
           <div className="flex-1"></div>
-          <TwButton variant="secondary" type="button" onClick={onClose}>
+          <TwButton
+            variant="secondary"
+            type="button"
+            onClick={() => setIsOpen(false)}
+          >
             Annulla
           </TwButton>
           <TwButton>Modifica</TwButton>
