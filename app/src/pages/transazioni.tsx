@@ -23,10 +23,10 @@ import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
 import {
-  TansactionDialogContainer,
+  TransactionDialogContainer,
   dialogActionAtom,
   dialogOpenAtom,
-} from "~/components/TransactionDialogs/TansactionDialogContainer";
+} from "~/components/TransactionDialogs/TransactionDialogContainer";
 
 function sumTransactionsAmount(transactions: TransactionWithJoins[]): number {
   let somma = 0;
@@ -116,7 +116,7 @@ const Transactions: NextPage = () => (
     </Head>
 
     <PageLayout name="Tansazioni" protectedPage>
-      <TansactionDialogContainer />
+      <TransactionDialogContainer />
 
       <Filters />
 
@@ -443,9 +443,7 @@ const AdvancedFilters = () => {
             type="text"
             placeholder="Cerca nel contenuto"
             value={filters.text}
-            onValueChange={(value) =>
-              setFilters((f) => ({ ...f, text: value }))
-            }
+            onChange={(e) => setFilters((f) => ({ ...f, text: e.target.value }))}
           />
         </div>
       </div>

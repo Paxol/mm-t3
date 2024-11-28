@@ -4,7 +4,7 @@ import { useAtom } from "jotai";
 
 import { api } from "~/utils/api";
 import { Button } from "../Button";
-import { dialogOpenAtom } from "./TansactionDialogContainer";
+import { dialogOpenAtom } from "./TransactionDialogContainer";
 
 export type DeleteTransactionData = {
   type: "DeleteTransaction";

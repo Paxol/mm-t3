@@ -31,7 +31,7 @@ export const dialogActionAtom = atom(
 
 const completedTxTemplateSet = new Set<string>();
 
-export const TansactionDialogContainer = () => {
+export const TransactionDialogContainer = () => {
   const [isOpen, setIsOpen] = useAtom(dialogOpenAtom);
   const [data, setData] = useAtom(dialogDataAtom);
   const searchParams = useSearchParams();

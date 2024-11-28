@@ -19,7 +19,7 @@ export async function updateTx({ prisma, userId, input }: UpdateParams) {
     input.amount === oldTx.amount &&
     input.type === oldTx.type &&
     input.walletId === oldTx.walletId &&
-    input.walletToId === oldTx.walletToId;
+    (input.type === 't' && input.walletToId === oldTx.walletToId);
 
   if (canRunSemplifiedMode) {
     return prisma.transaction.update({
@@ -84,7 +84,7 @@ export async function updateTx({ prisma, userId, input }: UpdateParams) {
         where: { id: input.walletId },
       });
 
-      if (walletToAmount !== null && input.walletToId)
+      if (walletToAmount !== null && input.type === 't' && input.walletToId)
         await prisma.wallet.update({
           data: { currentValue: walletToAmount },
           where: { id: input.walletToId },

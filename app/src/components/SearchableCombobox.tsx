@@ -3,7 +3,7 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { Combobox } from "@headlessui/react";
 import { HiSelector } from "react-icons/hi";
 
-interface Props<T> {
+export interface SearchableComboboxProps<T> {
   items: T[];
   selectedItem?: T;
   filter: (query: string, item: T) => boolean;
@@ -13,7 +13,7 @@ interface Props<T> {
   noItemsFoundText: string;
 }
 
-export function SearchableCombobox<T>(props: Props<T>) {
+export function SearchableCombobox<T>(props: SearchableComboboxProps<T>) {
   const {
     items,
     selectedItem,

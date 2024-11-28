@@ -61,7 +61,7 @@ export async function createTx({ input, prisma, userId }: CreateParams) {
     }),
   ];
 
-  if (walletToAmount !== null && input.walletToId)
+  if (input.type == "t" && input.walletToId && walletToAmount !== null)
     prismaActions.push(
       prisma.wallet.update({
         data: { currentValue: walletToAmount },

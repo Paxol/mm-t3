@@ -6,6 +6,22 @@ import { updateTx } from "../handlers/transactions/update";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TransactionWithJoins } from "../types";
 
+const txValidator = z.object({
+  amount: z.number(),
+  date: z.string().datetime(),
+  description: z.string(),
+  walletId: z.string(),
+}).and(z.union([
+  z.object({
+    type: z.literal("t"),
+    walletToId: z.string(),
+  }),
+  z.object({
+    type: z.union([z.literal("i"), z.literal("o")]),
+    categoryId: z.string(),
+  }),
+]));
+
 export const transactionsRouter = createTRPCRouter({
   getRange: protectedProcedure
     .input(
@@ -39,14 +55,7 @@ export const transactionsRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        amount: z.number(),
-        date: z.string().datetime(),
-        description: z.string(),
-        type: z.enum(["i", "o", "t"]),
-        categoryId: z.string().nullable(),
-        walletId: z.string(),
-        walletToId: z.string().nullable(),
-      }),
+      }).and(txValidator),
     )
     .mutation(({ ctx, input }) =>
       updateTx({
@@ -58,22 +67,15 @@ export const transactionsRouter = createTRPCRouter({
 
   create: protectedProcedure
     .input(
-      z.object({
-        amount: z.number(),
-        date: z.string().datetime(),
-        description: z.string(),
-        type: z.enum(["i", "o", "t"]),
-        categoryId: z.string().nullable(),
-        walletId: z.string(),
-        walletToId: z.string().nullable(),
-      }),
+      txValidator
     )
-    .mutation(({ ctx, input }) =>
-      createTx({
+    .mutation(({ ctx, input }) => {
+      return createTx({
         prisma: ctx.prisma,
         userId: ctx.session.user.id,
         input,
-      }),
+      })
+    }
     ),
 
   delete: protectedProcedure.input(z.string()).mutation(({ ctx, input }) =>

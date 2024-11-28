@@ -3,14 +3,16 @@ import { PrismaClient } from "@paxol/db";
 export type InputTx = {
   id?: string;
   amount: number;
-  description: string;
-  type: "i" | "o" | "t";
-  categoryId: string | null;
-  walletId: string;
-  walletToId: string | null;
   date: string;
-};
-
+  description: string;
+  walletId: string;
+} & ({
+  type: "t";
+  walletToId: string;
+} | {
+  type: "i" | "o";
+  categoryId: string;
+});
 
 export type Tx = Awaited<ReturnType<typeof fetchTx>>;
 

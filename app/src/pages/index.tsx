@@ -15,9 +15,9 @@ import { PageLayout } from "~/components/PageLayout";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/Popover";
 import { Transaction } from "~/components/Transaction";
 import {
-  TansactionDialogContainer,
+  TransactionDialogContainer,
   dialogActionAtom,
-} from "~/components/TransactionDialogs/TansactionDialogContainer";
+} from "~/components/TransactionDialogs/TransactionDialogContainer";
 import { Card } from "../components/Card";
 
 type TransactionWithCategory = {
@@ -108,7 +108,7 @@ const DashboardPage = () => {
 
   return (
     <div>
-      <TansactionDialogContainer />
+      <TransactionDialogContainer />
 
       <Resume />
 
