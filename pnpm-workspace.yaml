@@ -1,5 +1,6 @@
 packages:
   - app
+  - mm-faker
   - packages/api
   - packages/auth
   - packages/db
