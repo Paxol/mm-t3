@@ -10,7 +10,7 @@
   "dependencies": {
     "@inquirer/confirm": "^5.0.2",
     "@inquirer/select": "^4.0.2",
-    "@paxol/api": "workspace:*",
+    "@paxol/api": "*",
     "@paxol/db": "*",
     "zod-schema-faker": "^1.0.5"
   },

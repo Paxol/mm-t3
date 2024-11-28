@@ -196,7 +196,7 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2(@types/node@18.11.18)
       '@paxol/api':
-        specifier: workspace:*
+        specifier: '*'
         version: link:../packages/api
       '@paxol/db':
         specifier: '*'
