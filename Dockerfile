@@ -1,6 +1,6 @@
 FROM node:20.11-slim AS base
 RUN apt-get update && apt-get install -y --no-install-recommends curl openssl && rm -rf /var/lib/apt/lists/*
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9.12.1
 
 ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 
@@ -11,7 +11,7 @@ ENV SKIP_ENV_VALIDATION 1
 WORKDIR /mm-t3
 COPY . .
 
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 RUN pnpm build --filter=nextjs
 
 FROM base AS runner

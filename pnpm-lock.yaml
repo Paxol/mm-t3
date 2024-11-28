@@ -314,7 +314,7 @@ importers:
   scripts:
     dependencies:
       '@paxol/db':
-        specifier: workspace:*
+        specifier: '*'
         version: link:../packages/db
     devDependencies:
       '@types/node':
