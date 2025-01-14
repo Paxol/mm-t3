@@ -137,12 +137,13 @@ model User {
   Categories        Category[]
   Wallets           Wallet[]
   Budget            Budget[]
+  ApiKeys           ApiKey[]
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
+model ApiKey {
+  token      String   @id @unique
+  userId     String
   expires    DateTime
 
-  @@unique([identifier, token])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
