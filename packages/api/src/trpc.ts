@@ -9,7 +9,7 @@
 import { TRPCError, initTRPC } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
-import { getServerSession, type Session } from "@paxol/auth";
+import { authenticateToken, getServerSession, type Session } from "@paxol/auth";
 import { prisma } from "@paxol/db";
 
 /**
@@ -56,25 +56,12 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   // If user is not authenticated, try to get API key from header or query
   if (!session?.user.id) {
-    const rawToken = req.headers.authorization ?? req.query["token"];
-    const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
+    const user = await authenticateToken(req);
 
-    if (token) {
-      const apiKey = await prisma.apiKey.findUnique({
-        where: { token },
-        select: {expires: true, user: true}
-      });
-
-      if (apiKey && apiKey.expires.getTime() > Date.now()) {
-        session = {
-          expires: new Date(Date.now() + 2592000000).toISOString(), // Now + 30 days
-          user: {
-            id: apiKey.user.id,
-            name: apiKey.user.name,
-            email: apiKey.user.email,
-            image: apiKey.user.image,
-          }
-        }
+    if (user) {
+      session = {
+        expires: new Date(Date.now() + 2592000000).toISOString(), // Now + 30 days
+        user
       }
     }
   }
