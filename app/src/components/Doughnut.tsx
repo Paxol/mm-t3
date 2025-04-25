@@ -15,6 +15,8 @@ type DoughnutDataElement = {
 export const Doughnut: React.FC<DoughnutProps> = ({ data, fill, activeIndex }) => {
   const [hoverIndex, setHoverIndex] = useState(0);
 
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onPieEnter = useCallback((_: any, index: number) => {
     setHoverIndex(index);
   }, []);
@@ -38,6 +40,7 @@ export const Doughnut: React.FC<DoughnutProps> = ({ data, fill, activeIndex }) =
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ActiveShape = (props: any) => {
   const {
     cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value,
