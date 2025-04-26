@@ -271,7 +271,7 @@ const LatestTransactions: FC<{ className?: string }> = ({ className }) => {
         <span className="text-lg font-medium dark:text-white">Transazioni</span>
       </div>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-1">
         {showLoading ? (
           <span className="bg-gray-700 w-full h-[25rem] animate-pulse">
             &nbsp;

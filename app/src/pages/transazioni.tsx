@@ -308,7 +308,7 @@ const DailyTransactions: FC<{
 
   return (
     <div
-      className="border-b dark:border-gray-700 last:border-0 pb-3 overflow-hidden"
+      className="flex flex-col gap-1 border-b dark:border-gray-700 last:border-0 pb-3 overflow-hidden"
       onClick={() => setOpen(!open)}
     >
       <div className="flex flex-row justify-between items-center mt-3 cursor-pointer">
@@ -316,7 +316,7 @@ const DailyTransactions: FC<{
         <p className="dark:text-white">∑ {somma.toFixed(2)}</p>
       </div>
 
-      <div ref={collapseRef} onClick={(e) => e.stopPropagation()}>
+      <div ref={collapseRef} className="flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
         {open &&
           transactions.map((t) => (
             <Transaction
