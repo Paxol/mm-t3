@@ -25,7 +25,7 @@ export const AddBudgetDialog: FC = () => {
       });
 
       ctx.budgets.get.invalidate();
-      setIsOpen(false)
+      setIsOpen(false);
     },
     [ctx.budgets.get, add],
   );
@@ -33,7 +33,7 @@ export const AddBudgetDialog: FC = () => {
   return (
     <>
       <Card
-        className="flex items-center justify-center gap-2 cursor-pointer dark:text-white"
+        className="flex items-center justify-center gap-2 cursor-pointer"
         direction="horizontal"
         role="button"
         onClick={() => setIsOpen(true)}
@@ -51,7 +51,11 @@ export const AddBudgetDialog: FC = () => {
         </DialogTitle>
         <BudgetForm className="pt-2" onSubmit={handleSubmit}>
           <div className="flex items-center justify-end gap-2 mt-2">
-            <TwButton variant="secondary" type="button" onClick={() => setIsOpen(false)}>
+            <TwButton
+              variant="secondary"
+              type="button"
+              onClick={() => setIsOpen(false)}
+            >
               Annulla
             </TwButton>
             <TwButton>Aggiungi</TwButton>

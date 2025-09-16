@@ -1,12 +1,12 @@
 import React, { FC, useEffect, useMemo } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
-import type { Category, Wallet } from "@paxol/db";
 import { useAtom } from "jotai";
 import moment from "moment";
 import { BsPiggyBank } from "react-icons/bs";
 import { IoCashOutline } from "react-icons/io5";
 import { RiArrowLeftDownLine, RiArrowRightUpLine } from "react-icons/ri";
+import type { Category, Wallet } from "@paxol/db";
 
 import { api } from "~/utils/api";
 import { cn } from "~/utils/cn";
@@ -165,7 +165,7 @@ const Resume = () => {
 
       <Popover>
         <PopoverTrigger asChild>
-          <span className="cursor-pointer dark:text-white">Mostra conti</span>
+          <span className="cursor-pointer text-foreground">Mostra conti</span>
         </PopoverTrigger>
         <PopoverContent className="w-full max-w-[95vw]">
           <WalletsList />
@@ -225,7 +225,7 @@ const Categories: FC<{ className?: string; type?: "in" | "out" }> = ({
     <div className={cn("flex-1", className)}>
       <Card className="p-4">
         <div className="flex flex-none justify-between items-center mb-3">
-          <span className="text-lg font-medium dark:text-white">
+          <span className="text-lg font-medium">
             {type === "in" ? "Entrate" : "Uscite"}
           </span>
         </div>
@@ -243,11 +243,11 @@ const Categories: FC<{ className?: string; type?: "in" | "out" }> = ({
                   } rounded-full`}
                 ></div>
               </div>
-              <div className="flex-auto flex flex-col dark:text-white">
+              <div className="flex-auto flex flex-col">
                 <span className="text-lg leading-none font-medium mb-1">
                   {name}
                 </span>
-                <span className="text-sm leading-none text-gray-800 dark:text-gray-100">
+                <span className="text-sm leading-none">
                   € {amount.toFixed(2)}
                 </span>
               </div>
@@ -266,20 +266,20 @@ const LatestTransactions: FC<{ className?: string }> = ({ className }) => {
   const showLoading = !latestTransactions;
 
   return (
-    <Card className={cn("flex-1", className)}>
-      <div className="flex flex-none justify-between items-center mb-3">
-        <span className="text-lg font-medium dark:text-white">Transazioni</span>
+    <Card className={cn("flex-1 px-0 pb-0", className)}>
+      <div className="flex flex-none justify-between items-center mb-3 px-6">
+        <span className="text-lg font-medium">Transazioni</span>
       </div>
 
       <div className="flex flex-col gap-1">
         {showLoading ? (
-          <span className="bg-gray-700 w-full h-[25rem] animate-pulse">
-            &nbsp;
-          </span>
+          <span className="bg-card w-full h-[25rem] animate-pulse">&nbsp;</span>
         ) : latestTransactions && latestTransactions.length > 0 ? (
-          latestTransactions.map((t) => <Transaction key={t.id} element={t} />)
+          latestTransactions.map((t) => (
+            <Transaction key={t.id} className="px-6" element={t} />
+          ))
         ) : (
-          <span className="text-center m-8 dark:text-white">
+          <span className="text-center m-8">
             Non ci sono transazioni recenti
           </span>
         )}
@@ -298,12 +298,12 @@ type BalanceCardProps = {
 const BalanceCard = (props: BalanceCardProps) => {
   return (
     <Card
-      className={cn("gap-4 items-center dark:text-white p-3", props.className)}
+      className={cn("gap-4 items-center p-3", props.className)}
       direction="horizontal"
     >
       {props.icon}
       <div className="flex flex-col gap-1">
-        <span className="dark:text-gray-300 text-gray-700">{props.text}</span>
+        <span className="text-muted-foreground">{props.text}</span>
         <span>€ {props.balance?.toFixed(2)}</span>
       </div>
     </Card>

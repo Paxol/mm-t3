@@ -15,7 +15,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <JotaiProvider>
       <SessionProvider session={session}>
-        <div className="h-screen bg-gray-700 flex flex-col">
+        <div className="h-screen bg-background flex flex-col">
           <OverlayScrollbarsComponent
             options={{ scrollbars: { autoHide: "scroll" } }}
             defer

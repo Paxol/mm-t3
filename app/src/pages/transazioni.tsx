@@ -27,6 +27,7 @@ import {
   dialogActionAtom,
   dialogOpenAtom,
 } from "~/components/TransactionDialogs/TransactionDialogContainer";
+import { cn } from "~/lib/utils";
 
 function sumTransactionsAmount(transactions: TransactionWithJoins[]): number {
   let somma = 0;
@@ -247,14 +248,10 @@ const TransactionsPage = () => {
   );
 
   return (
-    <Card className="px-4 py-1">
+    <Card className="px-0 py-1">
       {dailyTransactions?.map(([date, t]) => (
         <DailyTransactions key={date} date={date} transactions={t} />
-      )) ?? (
-        <span className="text-center dark:text-white">
-          Nessuna transazione trovata
-        </span>
-      )}
+      )) ?? <span className="text-center">Nessuna transazione trovata</span>}
     </Card>
   );
 };
@@ -308,19 +305,31 @@ const DailyTransactions: FC<{
 
   return (
     <div
-      className="flex flex-col gap-1 border-b dark:border-gray-700 last:border-0 pb-3 overflow-hidden"
+      className={cn(
+        "flex flex-col border-b dark:border-gray-700 last:border-0 overflow-hidden cursor-pointer",
+        !open ? "pb-2" : "",
+      )}
       onClick={() => setOpen(!open)}
     >
-      <div className="flex flex-row justify-between items-center mt-3 cursor-pointer">
-        <p className="dark:text-white">{date.split("-").reverse().join("/")}</p>
-        <p className="dark:text-white">∑ {somma.toFixed(2)}</p>
+      <div
+        className={cn(
+          "flex flex-row justify-between items-center pt-3 pb-1 px-4",
+        )}
+      >
+        <p>{date.split("-").reverse().join("/")}</p>
+        <p>∑ {somma.toFixed(2)}</p>
       </div>
 
-      <div ref={collapseRef} className="flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={collapseRef}
+        className={cn("flex flex-col gap-1 cursor-auto", open ? "pb-1" : "")}
+        onClick={(e) => e.stopPropagation()}
+      >
         {open &&
           transactions.map((t) => (
             <Transaction
               key={t.id}
+              className="px-4"
               element={t}
               onElementClick={handleTxClick}
               onTrashClick={handleTxTrashClick}
@@ -387,14 +396,14 @@ const Filters = () => {
   return (
     <Card className="p-4 mb-4">
       <div className="flex space-x-4">
-        <div className="flex-1 dpw">
+        <div className="flex-1">
           <Datepicker
             useRange={false}
             value={filters}
             i18n="it"
             separator="→"
-            inputClassName="dark:text-white font-normal"
-            toggleClassName="dark:text-white"
+            inputClassName="relative transition-all duration-300 py-2.5 pl-4 pr-14 w-full border-gray-300 dark:border-slate-600 rounded-lg tracking-wide font-light text-sm placeholder-gray-400 bg-input text-foreground focus:ring disabled:opacity-40 disabled:cursor-not-allowed focus:border-blue-500 focus:ring-blue-500/20 font-normal"
+            toggleClassName="absolute right-0 h-full px-3 text-gray-400 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
             displayFormat="DD/MM/YYYY"
             onChange={(v) => {
               const startDate = v?.startDate ? new Date(v.startDate) : null;
@@ -434,22 +443,24 @@ const AdvancedFilters = () => {
   if (!wallets || !categoriesIn || !categoriesOut) return <Loader />;
 
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="flex flex-col gap-4 pt-4">
       <div className="-mb-2">
-        <div className="font-medium capitalize dark:text-white mb-2">Testo</div>
+        <div className="font-medium capitalize mb-2">Testo</div>
 
         <div className="relative">
           <Input
             type="text"
             placeholder="Cerca nel contenuto"
             value={filters.text}
-            onChange={(e) => setFilters((f) => ({ ...f, text: e.target.value }))}
+            onChange={(e) =>
+              setFilters((f) => ({ ...f, text: e.target.value }))
+            }
           />
         </div>
       </div>
 
       <div>
-        <div className="font-medium capitalize dark:text-white mb-2">Conti</div>
+        <div className="font-medium capitalize mb-2">Conti</div>
 
         <CheckboxGroup
           elements={wallets}
@@ -459,9 +470,7 @@ const AdvancedFilters = () => {
       </div>
 
       <div>
-        <div className="font-medium capitalize dark:text-white mb-2">
-          Categorie
-        </div>
+        <div className="font-medium capitalize mb-2">Categorie</div>
 
         <CheckboxGroup
           elements={categoriesIn}

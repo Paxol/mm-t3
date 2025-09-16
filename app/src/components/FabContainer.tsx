@@ -34,6 +34,7 @@ const FabContainer = () => {
       show={type !== "none"}
       appear={true}
       unmount={false}
+      className="flex flex-col justify-center opacity-100"
       enter="transition-opacity duration-150 ease-in-out"
       enterFrom="opacity-0"
       enterTo="opacity-100"
@@ -54,7 +55,7 @@ const FabWrapper = () => {
   if (fab.type === "simple")
     return (
       <button
-        className="rtf--mb mr-1 mt-3"
+        className="rtf--mb"
         style={{ backgroundColor: "#064e3b" }}
         onClick={fab.onClick}
       >

@@ -2,9 +2,11 @@ import moment from "moment";
 import { BiTrash } from "react-icons/bi";
 import { TransactionWithJoins } from "@paxol/api/src/types";
 
+import { cn } from "~/lib/utils";
 import { Badge } from "./ui/badge";
 
 type TransactionProps = {
+  className: string;
   element: TransactionWithJoins;
   showTrash?: boolean;
   hideCategory?: boolean;
@@ -13,6 +15,7 @@ type TransactionProps = {
 };
 
 export function Transaction({
+  className,
   element,
   onTrashClick,
   onElementClick,
@@ -23,22 +26,34 @@ export function Transaction({
 
   return (
     <div
-      className="flex items-center justify-between rounded px-3 py-2"
-      style={{
-        borderLeft: `0.25rem solid ${color}`,
-        borderRight: `0.25rem solid ${color}`,
-      }}
+      className={cn(
+        "flex items-center justify-between py-2 hover:bg-popover",
+        className,
+      )}
       onClick={() => onElementClick && onElementClick(element)}
     >
-      <div className="space-y-1">
-        <p className="font-medium">{getTitle(element)}</p>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          {!hideCategory && element.category && (
-            <Badge variant="secondary">{element.category.name}</Badge>
-          )}
-          <span>{moment(element.date).format("DD/MM/YYYY HH:mm")}</span>
+      <div className="flex items-stretch gap-3">
+        <div
+          style={{
+            borderLeft: `0.25rem solid ${color}`,
+          }}
+        >
+          {" "}
+        </div>
+
+        <div className="space-y-1">
+          <p className="font-medium">{getTitle(element)}</p>
+          <div className="flex flex-col items-start gap-2 text-sm text-muted-foreground">
+            {!hideCategory && element.category && (
+              <Badge variant="secondary" className="px-2 bg-white/[15%]">
+                {element.category.name}
+              </Badge>
+            )}
+            <span>{moment(element.date).format("DD/MM/YYYY HH:mm")}</span>
+          </div>
         </div>
       </div>
+
       <div className="flex items-center gap-3 justify-between">
         <div className="text-right">
           <p className="text-lg font-bold">€ {element.amount.toFixed(2)}</p>
@@ -48,7 +63,7 @@ export function Transaction({
         </div>
         {showTrash && (
           <div
-            className="flex-none flex items-center p-2 m-0 cursor-pointer dark:text-white dark:hover:text-red-400 hover:text-red-500"
+            className="flex-none flex items-center p-1 m-0 cursor-pointer dark:text-white dark:hover:text-red-400 hover:text-red-500"
             onClick={(e) => {
               e.stopPropagation();
               onTrashClick && onTrashClick(element);

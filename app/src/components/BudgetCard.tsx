@@ -1,6 +1,6 @@
 import React, { FC } from "react";
-import type { Budget } from "@paxol/db";
 import { MdOutlineEdit } from "react-icons/md";
+import type { Budget } from "@paxol/db";
 
 import { Progress } from "~/components/Progress";
 import { TwButton } from "~/components/TwButton";
@@ -45,7 +45,7 @@ export const BudgetCard: FC<BudgetProps> = ({
       : "bg-green-500";
 
   return (
-    <Card className="p-4 dark:text-white" onClick={onDetailsClick}>
+    <Card className="p-4" onClick={onDetailsClick}>
       <div className="flex justify-between items-start">
         <div>
           <div>{name}</div>

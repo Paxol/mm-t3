@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import moment from "moment";
 import {
   FormProvider,
@@ -7,13 +8,12 @@ import {
   useFormContext,
 } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { TransactionWithJoins } from "@paxol/api/src/types";
 import { Category, Transaction, Wallet } from "@paxol/db";
 
 import { Input } from "../Input";
 import { SearchableCombobox } from "../SearchableCombobox";
 import { Select } from "../Select";
-import { TransactionWithJoins } from "@paxol/api/src/types";
 
 const transactionRequestSchema = z
   .object({
@@ -187,7 +187,9 @@ export function TransactionForm({
         </div>
 
         <div>
-          <AmountInput {...methods.register("amount", {valueAsNumber: true})} />
+          <AmountInput
+            {...methods.register("amount", { valueAsNumber: true })}
+          />
         </div>
 
         {children}
@@ -204,7 +206,7 @@ const TransactionType = React.forwardRef<
 >((props, ref) => {
   return (
     <>
-      <small className="text-black dark:text-white">Tipo</small>
+      <small>Tipo</small>
       <Select {...props} ref={ref} className="mb-0">
         <option value="o">Uscita</option>
         <option value="i">Entrata</option>
@@ -229,7 +231,7 @@ function WalletSelect(props: {
 
   return (
     <>
-      <small className="text-black dark:text-white">{label}</small>
+      <small>{label}</small>
       <SearchableCombobox
         items={wallets}
         selectedItem={wallet}
@@ -271,7 +273,7 @@ function CategorySelect(props: { categories: Category[] }) {
 
   return (
     <>
-      <small className="text-black dark:text-white">Categoria</small>
+      <small>Categoria</small>
       <SearchableCombobox
         items={filteredCategories}
         selectedItem={category}
@@ -291,11 +293,11 @@ function DateTimeInput() {
   return (
     <div className="flex">
       <div className="flex-1 mr-1">
-        <small className="text-black dark:text-white">Data</small>
+        <small>Data</small>
         <Input className="mb-0" type="date" {...register("date")} />
       </div>
       <div className="flex-1 ml-1">
-        <small className="text-black dark:text-white">Ora</small>
+        <small>Ora</small>
         <Input className="mb-0" type="time" {...register("time")} />
       </div>
     </div>
@@ -308,7 +310,7 @@ const DescriptionInput = React.forwardRef<
 >((props, ref) => {
   return (
     <>
-      <small className="text-black dark:text-white">Descrizione</small>
+      <small>Descrizione</small>
       <Input className="mb-0" type="textarea" {...props} ref={ref} />
     </>
   );
@@ -321,7 +323,7 @@ const AmountInput = React.forwardRef<
 >((props, ref) => {
   return (
     <>
-      <small className="text-black dark:text-white">Ammontare</small>
+      <small>Ammontare</small>
       <Input
         className="mb-0"
         type="number"

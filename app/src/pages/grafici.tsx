@@ -7,14 +7,15 @@ import moment from "moment";
 import Datepicker from "react-tailwindcss-datepicker";
 
 import { api } from "~/utils/api";
+import { groupTransacionsByCategory } from "~/utils/groupTransacionsByCategory";
 import { Card } from "~/components/Card";
 import { fabAtom } from "~/components/FabContainer";
 import { SavingRate } from "~/components/Graphs/SavingRate";
 import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
 import { FlowCard } from "../components/Graphs/FlowCard";
+import { MonthOverMonthComparison } from "../components/Graphs/MonthOverMonthComparison";
 import { TransactionsPerCategoryCard } from "../components/Graphs/TransactionsPerCategoryCard";
-import { groupTransacionsByCategory } from "~/utils/groupTransacionsByCategory";
 
 const Grafici: NextPage = () => {
   const [fab, setFab] = useAtom(fabAtom);
@@ -47,14 +48,13 @@ export default Grafici;
 const GraphsCard = () => {
   const { startDate, endDate } = useAtomValue(dateRangeAtom);
 
-  const [{ data: transactions }, { data: categories }] =
-    api.useQueries((t) => [
-      t.transactions.getRange({
-        from: startDate,
-        to: endDate,
-      }),
-      t.categories.get()
-    ]);
+  const [{ data: transactions }, { data: categories }] = api.useQueries((t) => [
+    t.transactions.getRange({
+      from: startDate,
+      to: endDate,
+    }),
+    t.categories.get(),
+  ]);
 
   const { data: transactionByCategory } = useQuery({
     queryKey: ["transactionByCategory", startDate, endDate],
@@ -62,7 +62,7 @@ const GraphsCard = () => {
     suspense: true,
   });
 
-  if (!transactionByCategory) return null;
+  if (!transactionByCategory || !categories) return null;
 
   return (
     <div className="flex flex-col space-y-4">
@@ -95,6 +95,10 @@ const GraphsCard = () => {
         <div>
           <SavingRate transactionByCategory={transactionByCategory} />
         </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <MonthOverMonthComparison categories={categories} />
       </div>
     </div>
   );
@@ -138,12 +142,16 @@ const DatePickerCard = () => {
           value={nullishRange}
           i18n="it"
           separator="→"
-          inputClassName="dark:text-white font-normal"
-          toggleClassName="dark:text-white"
+          inputClassName="relative transition-all duration-300 py-2.5 pl-4 pr-14 w-full border-gray-300 dark:border-slate-600 rounded-lg tracking-wide font-light text-sm placeholder-gray-400 bg-input text-foreground focus:ring disabled:opacity-40 disabled:cursor-not-allowed focus:border-blue-500 focus:ring-blue-500/20 font-normal"
+          toggleClassName="absolute right-0 h-full px-3 text-gray-400 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
           displayFormat="DD/MM/YYYY"
           onChange={(v) => {
-            const startDate = v?.startDate ? moment(new Date(v.startDate)).startOf("day").toDate() : null;
-            const endDate = v?.endDate ? moment(new Date(v.endDate)).endOf("day").toDate() : null;
+            const startDate = v?.startDate
+              ? moment(new Date(v.startDate)).startOf("day").toDate()
+              : null;
+            const endDate = v?.endDate
+              ? moment(new Date(v.endDate)).endOf("day").toDate()
+              : null;
 
             setNullishRange({ startDate, endDate });
           }}
