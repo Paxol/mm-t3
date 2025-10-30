@@ -6,7 +6,7 @@ import { cn } from "~/lib/utils";
 import { Badge } from "./ui/badge";
 
 type TransactionProps = {
-  className: string;
+  className?: string;
   element: TransactionWithJoins;
   showTrash?: boolean;
   hideCategory?: boolean;
