@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Prisma } from "@paxol/db";
 
-import { createTx } from "../handlers/transactions/create";
+import { createManyTx, createTx } from "../handlers/transactions/create";
 import { deleteTx } from "../handlers/transactions/delete";
 import { updateTx } from "../handlers/transactions/update";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -53,6 +53,20 @@ export const transactionsRouter = createTRPCRouter({
           },
         },
         orderBy: { date: "desc" },
+      });
+    }),
+
+  bulkCreate: protectedProcedure
+    .input(
+      z.object({
+        items: txValidator.array(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await createManyTx({
+        prisma: ctx.prisma,
+        userId: ctx.session.user.id,
+        input: input.items,
       });
     }),
 

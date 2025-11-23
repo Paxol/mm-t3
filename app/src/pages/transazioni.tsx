@@ -22,6 +22,7 @@ import { Input } from "~/components/Input";
 import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
+import { ImportTransactionsDialog } from "~/components/TransactionDialogs/ImportTransactionsDialog";
 import {
   TransactionDialogContainer,
   dialogActionAtom,
@@ -169,15 +170,19 @@ const TransactionsPage = () => {
   const [, setFab] = useAtom(fabAtom);
   const [, setDialogData] = useAtom(dialogActionAtom);
 
-  const [transactionQuery] = api.useQueries((t) => [
-    t.transactions.getRange({ from, to }),
-    t.categories.get(),
-    t.wallets.get(),
-  ]);
+  const [transactionsQuery, categoriesQuery, walletsQuery] = api.useQueries(
+    (t) => [
+      t.transactions.getRange({ from, to }),
+      t.categories.get(),
+      t.wallets.get(),
+    ],
+  );
+
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const [topIn, topOut] = useMemo(
-    () => mostFrequentCategories(transactionQuery.data),
-    [transactionQuery.data],
+    () => mostFrequentCategories(transactionsQuery.data),
+    [transactionsQuery.data],
   );
 
   useEffect(() => {
@@ -235,24 +240,50 @@ const TransactionsPage = () => {
           ]),
       });
 
+    fabs.push({
+      text: "Importa da Excel",
+      color: "rgb(37, 99, 235)",
+      icon: (
+        <RiArrowLeftRightLine
+          className="text-blue-300"
+          style={{ width: "1.25em", height: "1.25em" }}
+        />
+      ),
+      onClick: () => setIsImportOpen(true),
+    });
+
     setFab({
       type: "withMenu",
       actions: fabs,
     });
-  }, [topIn, topOut, setDialogData, setFab]);
+  }, [topIn, topOut, setDialogData, setFab, setIsImportOpen]);
 
   const dailyTransactions = useMemo(
     () =>
-      getDailyTransactionsArray(applyFilters(transactionQuery.data, filters)),
-    [transactionQuery.data, filters],
+      getDailyTransactionsArray(applyFilters(transactionsQuery.data, filters)),
+    [transactionsQuery.data, filters],
   );
 
+  const wallets = walletsQuery.data ?? [];
+  const categories = categoriesQuery.data ?? [];
+
   return (
-    <Card className="px-0 py-1">
-      {dailyTransactions?.map(([date, t]) => (
-        <DailyTransactions key={date} date={date} transactions={t} />
-      )) ?? <span className="text-center">Nessuna transazione trovata</span>}
-    </Card>
+    <>
+      <Card className="px-0 py-1">
+        {dailyTransactions?.map(([date, t]) => (
+          <DailyTransactions key={date} date={date} transactions={t} />
+        )) ?? <span className="text-center">Nessuna transazione trovata</span>}
+      </Card>
+
+      {wallets.length > 0 && categories.length > 0 && (
+        <ImportTransactionsDialog
+          open={isImportOpen}
+          onOpenChange={setIsImportOpen}
+          wallets={wallets}
+          categories={categories}
+        />
+      )}
+    </>
   );
 };
 
