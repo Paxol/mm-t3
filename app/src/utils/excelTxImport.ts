@@ -89,6 +89,7 @@ function detectHeader(tokens: string[]): ColumnMapping {
       normalized === "dataoperazione" ||
       normalized === "date" ||
       normalized === "data" ||
+      normalized === "datavaluta" ||
       normalized === "curr.date"
     ) {
       mapping.dateIdx = index;
@@ -99,6 +100,7 @@ function detectHeader(tokens: string[]): ColumnMapping {
     if (
       normalized === "description" ||
       normalized === "descrizione" ||
+      normalized === "osservazioni" ||
       normalized === "causale"
     ) {
       mapping.descriptionIdx = index;
@@ -154,7 +156,7 @@ function parseItalianDate(raw: string): ParsedDate | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
 
-  const match = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})/);
+  const match = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4}|\d{2})/);
 
   if (!match) return null;
 
