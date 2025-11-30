@@ -40,6 +40,7 @@ export type ParseExcelTransactionsOptions = {
 type ColumnMapping = {
   hasHeader: boolean;
   dateIdx?: number;
+  timeIdx?: number;
   amountIdx?: number;
   descriptionIdx?: number;
 };
@@ -119,6 +120,11 @@ function detectHeader(tokens: string[]): ColumnMapping {
       return;
     }
 
+    if (normalized === "ora") {
+      mapping.timeIdx = index;
+      mapping.hasHeader = true;
+    }
+
     if (normalized === "state" || normalized === "stato") {
       mapping.hasHeader = true;
     }
@@ -184,6 +190,30 @@ function parseItalianDate(raw: string): ParsedDate | null {
     date: isoDate,
     time: "00:00",
   };
+}
+
+function parseTime(hoursRaw: string) {
+  const trimmed = hoursRaw.trim();
+  if (!trimmed) return null;
+
+  const match = trimmed.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+
+  const hours = Number.parseInt(match[1] ?? "", 10);
+  const minutes = Number.parseInt(match[2] ?? "", 10);
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    return null;
+  }
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0",
+  )}`;
 }
 
 function parseNumber(raw: string, parsingStyle: "ita" | "eng"): number | null {
@@ -388,6 +418,16 @@ export function parseExcelTransactions(
     }
 
     let parsedDate = parseItalianDate(dateRaw);
+
+    if (parsedDate && mapping.timeIdx !== undefined) {
+      const timeRaw = tokens[mapping.timeIdx] ?? "";
+      const time = parseTime(timeRaw);
+
+      if (time !== null) {
+        parsedDate.time = time;
+      }
+    }
+
     const amountValue = parseNumber(amountRaw, opts.numberParsingStyle);
     const absAmount = amountValue !== null ? Math.abs(amountValue) : null;
 
