@@ -2,8 +2,8 @@ import { Suspense, useEffect, useState } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
+import dayjs from "dayjs";
 import { atom, useAtom, useAtomValue } from "jotai";
-import moment from "moment";
 import Datepicker from "react-tailwindcss-datepicker";
 
 import { api } from "~/utils/api";
@@ -104,9 +104,9 @@ const GraphsCard = () => {
   );
 };
 
-export const dateRangeAtom = atom({
-  startDate: moment().startOf("month").toDate().toISOString(),
-  endDate: moment().endOf("month").toDate().toISOString(),
+const dateRangeAtom = atom({
+  startDate: dayjs().startOf("month").toDate().toISOString(),
+  endDate: dayjs().endOf("month").toDate().toISOString(),
 });
 
 const DatePickerCard = () => {
@@ -122,18 +122,6 @@ const DatePickerCard = () => {
 
   const ctx = api.useContext();
 
-  useEffect(() => {
-    const startDate = nullishRange.startDate?.toISOString();
-    const endDate = nullishRange.endDate?.toISOString();
-
-    if (startDate && endDate) {
-      setRange({ startDate, endDate });
-
-      ctx.transactions.getRange.invalidate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setRange, nullishRange, setNullishRange]);
-
   return (
     <Card className="p-4 mb-4">
       <div className="flex-1 dpw">
@@ -147,11 +135,23 @@ const DatePickerCard = () => {
           displayFormat="DD/MM/YYYY"
           onChange={(v) => {
             const startDate = v?.startDate
-              ? moment(new Date(v.startDate)).startOf("day").toDate()
+              ? dayjs(v.startDate).startOf("day").toDate()
               : null;
             const endDate = v?.endDate
-              ? moment(new Date(v.endDate)).endOf("day").toDate()
+              ? dayjs(v.endDate).endOf("day").toDate()
               : null;
+
+            if (startDate && endDate) {
+              const startIso = startDate.toISOString();
+              const endIso = endDate.toISOString();
+
+              setRange({
+                startDate: startIso,
+                endDate: endIso,
+              });
+
+              ctx.transactions.getRange.invalidate();
+            }
 
             setNullishRange({ startDate, endDate });
           }}

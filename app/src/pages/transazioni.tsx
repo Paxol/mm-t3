@@ -2,8 +2,8 @@ import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import dayjs from "dayjs";
 import { atom, useAtom, useAtomValue } from "jotai";
-import moment from "moment";
 import { BsFilter } from "react-icons/bs";
 import {
   RiArrowLeftDownLine,
@@ -47,7 +47,7 @@ function getDailyTransactionsArray(
   const map = new Map<string, TransactionWithJoins[]>();
 
   transactions.forEach((t) => {
-    const dateString = moment(t.date).format("YYYY-MM-DD");
+    const dateString = dayjs(t.date).format("YYYY-MM-DD");
 
     if (map.has(dateString)) map.get(dateString)?.push(t);
     else map.set(dateString, [t]);
@@ -385,13 +385,8 @@ type Filters = {
   text: string;
 } & Unchecked;
 
-const defaultStartDate = moment().startOf("month").toDate();
-const defaultEndDate = moment().endOf("month").toDate();
-
-const dateRangeAtom = atom({
-  from: defaultStartDate.toISOString(),
-  to: defaultStartDate.toISOString(),
-});
+const defaultStartDate = dayjs().startOf("month").toDate();
+const defaultEndDate = dayjs().endOf("month").toDate();
 
 const filtersAtom = atom<Filters>({
   startDate: defaultStartDate,
@@ -404,23 +399,24 @@ const filtersAtom = atom<Filters>({
   transfer: undefined,
 });
 
+const dateRangeAtom = atom((get) => {
+  const filters = get(filtersAtom);
+  return {
+    from: (filters.startDate ?? defaultStartDate).toISOString(),
+    to: (filters.endDate ?? defaultEndDate).toISOString(),
+  };
+});
+
 const Filters = () => {
   const ctx = api.useContext();
   const [filters, setFilters] = useAtom(filtersAtom);
-  const [, setDateRange] = useAtom(dateRangeAtom);
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (filters.startDate && filters.endDate) {
-      setDateRange({
-        from: filters.startDate.toISOString(),
-        to: filters.endDate.toISOString(),
-      });
-
       ctx.transactions.getRange.invalidate();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.startDate, filters.endDate]);
+  }, [filters.startDate, filters.endDate, ctx]);
 
   const [ref] = useAutoAnimate();
 
@@ -437,8 +433,12 @@ const Filters = () => {
             toggleClassName="absolute right-0 h-full px-3 text-gray-400 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
             displayFormat="DD/MM/YYYY"
             onChange={(v) => {
-              const startDate = v?.startDate ? new Date(v.startDate) : null;
-              const endDate = v?.endDate ? new Date(v.endDate) : null;
+              const startDate = v?.startDate
+                ? dayjs(v.startDate).startOf("day").toDate()
+                : null;
+              const endDate = v?.endDate
+                ? dayjs(v.endDate).endOf("day").toDate()
+                : null;
 
               setFilters((f) => ({ ...f, startDate, endDate }));
             }}
