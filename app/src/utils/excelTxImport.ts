@@ -233,7 +233,7 @@ function parseNumber(raw: string, parsingStyle: "ita" | "eng"): number | null {
   const normalized =
     parsingStyle === "ita"
       ? unsigned.replace(/\./g, "").replace(/,/g, ".")
-      : unsigned.replace(/\,/g, "");
+      : unsigned.replace(/,/g, "");
 
   const parsed = Number.parseFloat(normalized);
 

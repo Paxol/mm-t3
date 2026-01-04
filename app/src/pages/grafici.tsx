@@ -14,7 +14,7 @@ import { SavingRate } from "~/components/Graphs/SavingRate";
 import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
 import { FlowCard } from "../components/Graphs/FlowCard";
-import { MonthOverMonthComparison } from "../components/Graphs/MonthOverMonthComparison";
+// import { MonthOverMonthComparison } from "../components/Graphs/MonthOverMonthComparison";
 import { TransactionsPerCategoryCard } from "../components/Graphs/TransactionsPerCategoryCard";
 
 const Grafici: NextPage = () => {
