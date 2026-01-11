@@ -1,12 +1,21 @@
-# create-t3-turbo
+# UMoney
 
-<img width="1758" alt="turbo2" src="https://user-images.githubusercontent.com/51714798/213819392-33e50db9-3e38-4c51-9a22-03abe5e48f3d.png">
+A personal finance and money management application that helps users track budgets, transactions, categories, and wallets, with clear visualizations of financial data through charts and graphs.
 
 ## About
 
-Ever wondered how to migrate your T3 application into a monorepo? Stop right here! This is the perfect starter repo to get you running with the perfect stack!
+The app is built with the T3 stack and uses [Turborepo](https://turborepo.org/) to manage the monorepo and provides a type-safe environment from the database to the frontend.
 
-It uses [Turborepo](https://turborepo.org/) and contains:
+### Tech Stack
+
+- [Next.js 13](https://nextjs.org)
+- [tRPC](https://trpc.io)
+- [Prisma](https://www.prisma.io/orm)
+- [NextAuth.js](https://next-auth.js.org)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Turborepo](https://turborepo.org)
+
+## Repository Structure
 
 ```
 .github
@@ -15,64 +24,77 @@ It uses [Turborepo](https://turborepo.org/) and contains:
 .vscode
   └─ Recommended extensions and settings for VSCode users
 app
-   ├─ Next.js 13
-   ├─ React 18
-   ├─ TailwindCSS
-   └─ E2E Typesafe API Server & Client
+  ├─ Next.js 13
+  ├─ React 18
+  ├─ TailwindCSS
+  └─ E2E Typesafe API Server & Client
 packages
- ├─ api
- |   └─ tRPC v10 router definition
- ├─ auth
-     └─ authentication using next-auth.
- └─ db
-     └─ typesafe db-calls using Prisma
+  ├─ api
+  |   └─ tRPC v10 router definition
+  ├─ auth
+  |   └─ authentication using next-auth.
+  └─ db
+  |   └─ typesafe db-calls using Prisma
+  └─ config
+      └─ Shared Tailwind and PostCSS configurations
 ```
 
 ## Quick Start
 
-To get it running, follow the steps below:
+To get the project running locally, follow these steps:
 
-### Setup dependencies
+### 1. Install Dependencies
 
-```diff
-# Install dependencies
-pnpm i
+```bash
+pnpm install
+```
 
-# In packages/db/prisma update schema.prisma provider to use sqlite
-# or use your own database provider
-- provider = "postgresql"
-+ provider = "sqlite"
+### 2. Configure Environment Variables
 
-# Configure environment variables.
-# There is an `.env.example` in the root directory you can use for reference
+Copy the `.env.example` file to `.env` and fill in the required values:
+
+```bash
 cp .env.example .env
+```
 
-# Push the Prisma schema to your database
+Key variables:
+
+- `DATABASE_URL`: Your PostgreSQL connection string.
+- `NEXTAUTH_SECRET`: A secret for NextAuth.js (generate with `openssl rand -base64 32`).
+- `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`: For Google authentication.
+
+### 3. Initialize the Database
+
+```bash
 pnpm db:push
+```
+
+### 4. Start the Development Server
+
+```bash
+pnpm dev
 ```
 
 ## Deployment
 
-### Next.js
+### Docker
 
-#### Prerequisites
+This repository includes a `Dockerfile` for containerized deployment. It uses Next.js [standalone output](https://nextjs.org/docs/pages/api-reference/config/next-config-js/output) to minimize image size.
 
-_We do not recommend deploying a SQLite database on serverless environments since the data wouldn't be persisted. I provisioned a quick Postgresql database on [Railway](https://railway.app), but you can of course use any other database provider. Make sure the prisma schema is updated to use the correct database._
+#### Build the Image
 
-#### Deploy to Vercel
+```bash
+docker build -t mm-t3 .
+```
 
-Let's deploy the Next.js application to [Vercel](https://vercel.com/). If you have ever deployed a Turborepo app there, the steps are quite straightforward. You can also read the [official Turborepo guide](https://vercel.com/docs/concepts/monorepos/turborepo) on deploying to Vercel.
+#### Run the Container
 
-1. Create a new project on Vercel, select the `app` folder as the root directory and apply the following build settings:
+```bash
+docker run -p 3000:3000 --env-file .env mm-t3
+```
 
-<img width="927" alt="Vercel deployment settings" src="https://user-images.githubusercontent.com/11340449/201974887-b6403a32-5570-4ce6-b146-c486c0dbd244.png">
-
-2. Add your `DATABASE_URL` environment variable.
-
-3. Done! Your app should successfully deploy.
+The application will be available at `http://localhost:3000`.
 
 ## References
 
-The stack originates from [create-t3-app](https://github.com/t3-oss/create-t3-app).
-
-A [blog post](https://jumr.dev/blog/t3-turbo) where I wrote how to migrate a T3 app into this.
+This project was bootstrapped using [create-t3-turbo](https://github.com/t3-oss/create-t3-turbo).
