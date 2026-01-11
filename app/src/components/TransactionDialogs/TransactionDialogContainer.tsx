@@ -96,7 +96,7 @@ export const TransactionDialogContainer = () => {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-2xl">
+            <div className="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-popover text-foreground shadow-xl rounded-2xl">
               {data?.type === "AddTransaction" && (
                 <AddEditTransaction {...data} />
               )}

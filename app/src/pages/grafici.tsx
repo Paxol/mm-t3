@@ -2,19 +2,20 @@ import { Suspense, useEffect, useState } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
+import dayjs from "dayjs";
 import { atom, useAtom, useAtomValue } from "jotai";
-import moment from "moment";
 import Datepicker from "react-tailwindcss-datepicker";
 
 import { api } from "~/utils/api";
+import { groupTransacionsByCategory } from "~/utils/groupTransacionsByCategory";
 import { Card } from "~/components/Card";
 import { fabAtom } from "~/components/FabContainer";
 import { SavingRate } from "~/components/Graphs/SavingRate";
 import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
 import { FlowCard } from "../components/Graphs/FlowCard";
+// import { MonthOverMonthComparison } from "../components/Graphs/MonthOverMonthComparison";
 import { TransactionsPerCategoryCard } from "../components/Graphs/TransactionsPerCategoryCard";
-import { groupTransacionsByCategory } from "~/utils/groupTransacionsByCategory";
 
 const Grafici: NextPage = () => {
   const [fab, setFab] = useAtom(fabAtom);
@@ -47,14 +48,13 @@ export default Grafici;
 const GraphsCard = () => {
   const { startDate, endDate } = useAtomValue(dateRangeAtom);
 
-  const [{ data: transactions }, { data: categories }] =
-    api.useQueries((t) => [
-      t.transactions.getRange({
-        from: startDate,
-        to: endDate,
-      }),
-      t.categories.get()
-    ]);
+  const [{ data: transactions }, { data: categories }] = api.useQueries((t) => [
+    t.transactions.getRange({
+      from: startDate,
+      to: endDate,
+    }),
+    t.categories.get(),
+  ]);
 
   const { data: transactionByCategory } = useQuery({
     queryKey: ["transactionByCategory", startDate, endDate],
@@ -62,7 +62,7 @@ const GraphsCard = () => {
     suspense: true,
   });
 
-  if (!transactionByCategory) return null;
+  if (!transactionByCategory || !categories) return null;
 
   return (
     <div className="flex flex-col space-y-4">
@@ -96,13 +96,17 @@ const GraphsCard = () => {
           <SavingRate transactionByCategory={transactionByCategory} />
         </div>
       </div>
+
+      {/* <div className="flex flex-col gap-4">
+        <MonthOverMonthComparison categories={categories} />
+      </div> */}
     </div>
   );
 };
 
-export const dateRangeAtom = atom({
-  startDate: moment().startOf("month").toDate().toISOString(),
-  endDate: moment().endOf("month").toDate().toISOString(),
+const dateRangeAtom = atom({
+  startDate: dayjs().startOf("month").toDate().toISOString(),
+  endDate: dayjs().endOf("month").toDate().toISOString(),
 });
 
 const DatePickerCard = () => {
@@ -118,18 +122,6 @@ const DatePickerCard = () => {
 
   const ctx = api.useContext();
 
-  useEffect(() => {
-    const startDate = nullishRange.startDate?.toISOString();
-    const endDate = nullishRange.endDate?.toISOString();
-
-    if (startDate && endDate) {
-      setRange({ startDate, endDate });
-
-      ctx.transactions.getRange.invalidate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setRange, nullishRange, setNullishRange]);
-
   return (
     <Card className="p-4 mb-4">
       <div className="flex-1 dpw">
@@ -138,12 +130,28 @@ const DatePickerCard = () => {
           value={nullishRange}
           i18n="it"
           separator="→"
-          inputClassName="dark:text-white font-normal"
-          toggleClassName="dark:text-white"
+          inputClassName="relative transition-all duration-300 py-2.5 pl-4 pr-14 w-full border-gray-300 dark:border-slate-600 rounded-lg tracking-wide font-light text-sm placeholder-gray-400 bg-input text-foreground focus:ring disabled:opacity-40 disabled:cursor-not-allowed focus:border-blue-500 focus:ring-blue-500/20 font-normal"
+          toggleClassName="absolute right-0 h-full px-3 text-gray-400 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
           displayFormat="DD/MM/YYYY"
           onChange={(v) => {
-            const startDate = v?.startDate ? moment(new Date(v.startDate)).startOf("day").toDate() : null;
-            const endDate = v?.endDate ? moment(new Date(v.endDate)).endOf("day").toDate() : null;
+            const startDate = v?.startDate
+              ? dayjs(v.startDate).startOf("day").toDate()
+              : null;
+            const endDate = v?.endDate
+              ? dayjs(v.endDate).endOf("day").toDate()
+              : null;
+
+            if (startDate && endDate) {
+              const startIso = startDate.toISOString();
+              const endIso = endDate.toISOString();
+
+              setRange({
+                startDate: startIso,
+                endDate: endIso,
+              });
+
+              ctx.transactions.getRange.invalidate();
+            }
 
             setNullishRange({ startDate, endDate });
           }}

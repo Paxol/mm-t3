@@ -9,12 +9,19 @@ import { Budget, Category } from "@paxol/db";
 import { api } from "~/utils/api";
 import { BudgetCard } from "~/components/BudgetCard";
 import { AddBudgetDialog } from "~/components/BudgetDialogs/AddBudgetDialog";
-import { EditBudgetDialog, EditBudgetItemAtom } from "~/components/BudgetDialogs/EditBudgetDialog";
+import {
+  BudgetDetailsDialog,
+  ShowBudgetDetailsAtom,
+} from "~/components/BudgetDialogs/BudgetDetailsDialog";
+import {
+  EditBudgetDialog,
+  EditBudgetItemAtom,
+} from "~/components/BudgetDialogs/EditBudgetDialog";
 import { fabAtom } from "~/components/FabContainer";
 import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
 
-const Home: NextPage = () => {
+const BudgetPage: NextPage = () => {
   const [fab, setFab] = useAtom(fabAtom);
 
   useEffect(() => {
@@ -38,7 +45,7 @@ const Home: NextPage = () => {
   );
 };
 
-export default Home;
+export default BudgetPage;
 
 type BudgetWithCategory = Budget & {
   category: Category;
@@ -60,7 +67,8 @@ const BudgetsPage = () => {
     [getQuery.data, txsQuery.data],
   );
 
-  const setEditing = useSetAtom(EditBudgetItemAtom)
+  const setEditing = useSetAtom(EditBudgetItemAtom);
+  const setDetailsItem = useSetAtom(ShowBudgetDetailsAtom);
 
   return (
     <>
@@ -75,6 +83,9 @@ const BudgetsPage = () => {
             onEditClick={() => {
               setEditing(el);
             }}
+            onDetailsClick={() => {
+              setDetailsItem(el);
+            }}
           />
         ))}
 
@@ -82,6 +93,7 @@ const BudgetsPage = () => {
       </div>
 
       <EditBudgetDialog />
+      <BudgetDetailsDialog />
     </>
   );
 };

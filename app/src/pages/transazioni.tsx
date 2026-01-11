@@ -2,8 +2,8 @@ import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import dayjs from "dayjs";
 import { atom, useAtom, useAtomValue } from "jotai";
-import moment from "moment";
 import { BsFilter } from "react-icons/bs";
 import {
   RiArrowLeftDownLine,
@@ -22,11 +22,13 @@ import { Input } from "~/components/Input";
 import { Loader } from "~/components/Loader";
 import { PageLayout } from "~/components/PageLayout";
 import { Transaction } from "~/components/Transaction";
+import { ImportTransactionsDialog } from "~/components/TransactionDialogs/ImportTransactionsDialog";
 import {
   TransactionDialogContainer,
   dialogActionAtom,
   dialogOpenAtom,
 } from "~/components/TransactionDialogs/TransactionDialogContainer";
+import { cn } from "~/lib/utils";
 
 function sumTransactionsAmount(transactions: TransactionWithJoins[]): number {
   let somma = 0;
@@ -45,7 +47,7 @@ function getDailyTransactionsArray(
   const map = new Map<string, TransactionWithJoins[]>();
 
   transactions.forEach((t) => {
-    const dateString = moment(t.date).format("YYYY-MM-DD");
+    const dateString = dayjs(t.date).format("YYYY-MM-DD");
 
     if (map.has(dateString)) map.get(dateString)?.push(t);
     else map.set(dateString, [t]);
@@ -168,15 +170,19 @@ const TransactionsPage = () => {
   const [, setFab] = useAtom(fabAtom);
   const [, setDialogData] = useAtom(dialogActionAtom);
 
-  const [transactionQuery] = api.useQueries((t) => [
-    t.transactions.getRange({ from, to }),
-    t.categories.get(),
-    t.wallets.get(),
-  ]);
+  const [transactionsQuery, categoriesQuery, walletsQuery] = api.useQueries(
+    (t) => [
+      t.transactions.getRange({ from, to }),
+      t.categories.get(),
+      t.wallets.get(),
+    ],
+  );
+
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const [topIn, topOut] = useMemo(
-    () => mostFrequentCategories(transactionQuery.data),
-    [transactionQuery.data],
+    () => mostFrequentCategories(transactionsQuery.data),
+    [transactionsQuery.data],
   );
 
   useEffect(() => {
@@ -234,28 +240,50 @@ const TransactionsPage = () => {
           ]),
       });
 
+    fabs.push({
+      text: "Importa da Excel",
+      color: "rgb(37, 99, 235)",
+      icon: (
+        <RiArrowLeftRightLine
+          className="text-blue-300"
+          style={{ width: "1.25em", height: "1.25em" }}
+        />
+      ),
+      onClick: () => setIsImportOpen(true),
+    });
+
     setFab({
       type: "withMenu",
       actions: fabs,
     });
-  }, [topIn, topOut, setDialogData, setFab]);
+  }, [topIn, topOut, setDialogData, setFab, setIsImportOpen]);
 
   const dailyTransactions = useMemo(
     () =>
-      getDailyTransactionsArray(applyFilters(transactionQuery.data, filters)),
-    [transactionQuery.data, filters],
+      getDailyTransactionsArray(applyFilters(transactionsQuery.data, filters)),
+    [transactionsQuery.data, filters],
   );
 
+  const wallets = walletsQuery.data ?? [];
+  const categories = categoriesQuery.data ?? [];
+
   return (
-    <Card className="px-4 py-1">
-      {dailyTransactions?.map(([date, t]) => (
-        <DailyTransactions key={date} date={date} transactions={t} />
-      )) ?? (
-        <span className="text-center dark:text-white">
-          Nessuna transazione trovata
-        </span>
+    <>
+      <Card className="px-0 py-1">
+        {dailyTransactions?.map(([date, t]) => (
+          <DailyTransactions key={date} date={date} transactions={t} />
+        )) ?? <span className="text-center">Nessuna transazione trovata</span>}
+      </Card>
+
+      {wallets.length > 0 && categories.length > 0 && (
+        <ImportTransactionsDialog
+          open={isImportOpen}
+          onOpenChange={setIsImportOpen}
+          wallets={wallets}
+          categories={categories}
+        />
       )}
-    </Card>
+    </>
   );
 };
 
@@ -308,19 +336,31 @@ const DailyTransactions: FC<{
 
   return (
     <div
-      className="border-b dark:border-gray-700 last:border-0 pb-3 overflow-hidden"
+      className={cn(
+        "flex flex-col border-b dark:border-gray-700 last:border-0 overflow-hidden cursor-pointer",
+        !open ? "pb-2" : "",
+      )}
       onClick={() => setOpen(!open)}
     >
-      <div className="flex flex-row justify-between items-center mt-3 cursor-pointer">
-        <p className="dark:text-white">{date.split("-").reverse().join("/")}</p>
-        <p className="dark:text-white">∑ {somma.toFixed(2)}</p>
+      <div
+        className={cn(
+          "flex flex-row justify-between items-center pt-3 pb-1 px-4",
+        )}
+      >
+        <p>{date.split("-").reverse().join("/")}</p>
+        <p>∑ {somma.toFixed(2)}</p>
       </div>
 
-      <div ref={collapseRef} onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={collapseRef}
+        className={cn("flex flex-col gap-1 cursor-auto", open ? "pb-1" : "")}
+        onClick={(e) => e.stopPropagation()}
+      >
         {open &&
           transactions.map((t) => (
             <Transaction
               key={t.id}
+              className="px-4"
               element={t}
               onElementClick={handleTxClick}
               onTrashClick={handleTxTrashClick}
@@ -345,13 +385,8 @@ type Filters = {
   text: string;
 } & Unchecked;
 
-const defaultStartDate = moment().startOf("month").toDate();
-const defaultEndDate = moment().endOf("month").toDate();
-
-const dateRangeAtom = atom({
-  from: defaultStartDate.toISOString(),
-  to: defaultStartDate.toISOString(),
-});
+const defaultStartDate = dayjs().startOf("month").toDate();
+const defaultEndDate = dayjs().endOf("month").toDate();
 
 const filtersAtom = atom<Filters>({
   startDate: defaultStartDate,
@@ -364,41 +399,46 @@ const filtersAtom = atom<Filters>({
   transfer: undefined,
 });
 
+const dateRangeAtom = atom((get) => {
+  const filters = get(filtersAtom);
+  return {
+    from: (filters.startDate ?? defaultStartDate).toISOString(),
+    to: (filters.endDate ?? defaultEndDate).toISOString(),
+  };
+});
+
 const Filters = () => {
   const ctx = api.useContext();
   const [filters, setFilters] = useAtom(filtersAtom);
-  const [, setDateRange] = useAtom(dateRangeAtom);
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (filters.startDate && filters.endDate) {
-      setDateRange({
-        from: filters.startDate.toISOString(),
-        to: filters.endDate.toISOString(),
-      });
-
       ctx.transactions.getRange.invalidate();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.startDate, filters.endDate]);
+  }, [filters.startDate, filters.endDate, ctx]);
 
   const [ref] = useAutoAnimate();
 
   return (
     <Card className="p-4 mb-4">
       <div className="flex space-x-4">
-        <div className="flex-1 dpw">
+        <div className="flex-1">
           <Datepicker
             useRange={false}
             value={filters}
             i18n="it"
             separator="→"
-            inputClassName="dark:text-white font-normal"
-            toggleClassName="dark:text-white"
+            inputClassName="relative transition-all duration-300 py-2.5 pl-4 pr-14 w-full border-gray-300 dark:border-slate-600 rounded-lg tracking-wide font-light text-sm placeholder-gray-400 bg-input text-foreground focus:ring disabled:opacity-40 disabled:cursor-not-allowed focus:border-blue-500 focus:ring-blue-500/20 font-normal"
+            toggleClassName="absolute right-0 h-full px-3 text-gray-400 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
             displayFormat="DD/MM/YYYY"
             onChange={(v) => {
-              const startDate = v?.startDate ? new Date(v.startDate) : null;
-              const endDate = v?.endDate ? new Date(v.endDate) : null;
+              const startDate = v?.startDate
+                ? dayjs(v.startDate).startOf("day").toDate()
+                : null;
+              const endDate = v?.endDate
+                ? dayjs(v.endDate).endOf("day").toDate()
+                : null;
 
               setFilters((f) => ({ ...f, startDate, endDate }));
             }}
@@ -434,22 +474,24 @@ const AdvancedFilters = () => {
   if (!wallets || !categoriesIn || !categoriesOut) return <Loader />;
 
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="flex flex-col gap-4 pt-4">
       <div className="-mb-2">
-        <div className="font-medium capitalize dark:text-white mb-2">Testo</div>
+        <div className="font-medium capitalize mb-2">Testo</div>
 
         <div className="relative">
           <Input
             type="text"
             placeholder="Cerca nel contenuto"
             value={filters.text}
-            onChange={(e) => setFilters((f) => ({ ...f, text: e.target.value }))}
+            onChange={(e) =>
+              setFilters((f) => ({ ...f, text: e.target.value }))
+            }
           />
         </div>
       </div>
 
       <div>
-        <div className="font-medium capitalize dark:text-white mb-2">Conti</div>
+        <div className="font-medium capitalize mb-2">Conti</div>
 
         <CheckboxGroup
           elements={wallets}
@@ -459,9 +501,7 @@ const AdvancedFilters = () => {
       </div>
 
       <div>
-        <div className="font-medium capitalize dark:text-white mb-2">
-          Categorie
-        </div>
+        <div className="font-medium capitalize mb-2">Categorie</div>
 
         <CheckboxGroup
           elements={categoriesIn}

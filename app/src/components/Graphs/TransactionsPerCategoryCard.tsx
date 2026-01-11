@@ -2,10 +2,10 @@ import { useMemo, useState } from "react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { TransactionWithJoins } from "@paxol/api/src/types";
 
+import { CategoryWithTransactions } from "~/utils/groupTransacionsByCategory";
 import { Card } from "~/components/Card";
 import { Doughnut } from "~/components/Doughnut";
 import { Transaction } from "~/components/Transaction";
-import { CategoryWithTransactions } from "~/utils/groupTransacionsByCategory";
 
 type InOut = "in" | "out";
 
@@ -115,7 +115,7 @@ const CategoryCollapse: React.FC<{
 
   return (
     <div
-      className="border-b dark:border-gray-700 last:border-0 py-3 cursor-pointer"
+      className="flex flex-col gap-1 border-b dark:border-gray-700 last:border-0 py-3 cursor-pointer"
       onClick={() => setOpen()}
     >
       <div className="flex flex-row justify-between items-center">
@@ -125,12 +125,12 @@ const CategoryCollapse: React.FC<{
 
       <div
         ref={ref}
-        className="cursor-default"
+        className="cursor-default flex flex-col gap-1"
         onClick={(e) => e.stopPropagation()}
       >
         {open &&
           transactions.map((t) => (
-            <Transaction key={t.id} element={t} hideTitle />
+            <Transaction key={t.id} element={t} hideCategory />
           ))}
       </div>
     </div>

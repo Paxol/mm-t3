@@ -46,7 +46,7 @@ export const EditBudgetDialog: FC = () => {
   );
 
   const handleDelete = useCallback(async () => {
-    if (!item) return;
+    if (!item?.id) return;
 
     await remove.mutateAsync({ id: item.id });
 

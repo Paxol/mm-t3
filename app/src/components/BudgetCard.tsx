@@ -1,6 +1,6 @@
 import React, { FC } from "react";
-import type { Budget } from "@paxol/db";
 import { MdOutlineEdit } from "react-icons/md";
+import type { Budget } from "@paxol/db";
 
 import { Progress } from "~/components/Progress";
 import { TwButton } from "~/components/TwButton";
@@ -12,6 +12,7 @@ type BudgetProps = {
   name: string;
   value: number;
   onEditClick?: () => void;
+  onDetailsClick?: () => void;
 };
 export const BudgetCard: FC<BudgetProps> = ({
   amount,
@@ -19,6 +20,7 @@ export const BudgetCard: FC<BudgetProps> = ({
   type,
   value,
   onEditClick,
+  onDetailsClick,
 }) => {
   let typeSting: string;
   switch (type) {
@@ -43,7 +45,7 @@ export const BudgetCard: FC<BudgetProps> = ({
       : "bg-green-500";
 
   return (
-    <Card className="p-4 dark:text-white">
+    <Card className="p-4" onClick={onDetailsClick}>
       <div className="flex justify-between items-start">
         <div>
           <div>{name}</div>

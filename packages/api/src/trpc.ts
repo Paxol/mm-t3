@@ -9,7 +9,7 @@
 import { TRPCError, initTRPC } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
-import { getServerSession, type Session } from "@paxol/auth";
+import { authenticateToken, getServerSession, type Session } from "@paxol/auth";
 import { prisma } from "@paxol/db";
 
 /**
@@ -52,7 +52,19 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts;
 
   // Get the session from the server using the unstable_getServerSession wrapper function
-  const session = await getServerSession({ req, res });
+  let session = await getServerSession({ req, res });
+
+  // If user is not authenticated, try to get API key from header or query
+  if (!session?.user.id) {
+    const user = await authenticateToken(req);
+
+    if (user) {
+      session = {
+        expires: new Date(Date.now() + 2592000000).toISOString(), // Now + 30 days
+        user
+      }
+    }
+  }
 
   return createInnerTRPCContext({
     session,
