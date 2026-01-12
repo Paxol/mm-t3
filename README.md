@@ -2,6 +2,8 @@
 
 A personal finance and money management application that helps users track budgets, transactions, categories, and wallets, with clear visualizations of financial data through charts and graphs.
 
+<img src="images/homepage.png" />
+
 ## About
 
 The app is built with the T3 stack and uses [Turborepo](https://turborepo.org/) to manage the monorepo and provides a type-safe environment from the database to the frontend.
