@@ -1,3 +1,5 @@
+import { findMatch } from "./stringSimilatiry";
+
 export type ParsedTransactionDraft = {
   id: string;
   sourceIndex: number;
@@ -34,6 +36,7 @@ export type ParsedTransactionDraft = {
 export type ParseExcelTransactionsOptions = {
   defaultWalletId?: string;
   defaultCategoryId?: { in?: string; out?: string };
+  categories: { in: { id: string, name: string }[], out: { id: string, name: string }[] }
   numberParsingStyle: "ita" | "eng";
 };
 
@@ -43,6 +46,7 @@ type ColumnMapping = {
   timeIdx?: number;
   amountIdx?: number;
   descriptionIdx?: number;
+  categoryIdx?: number;
 };
 
 const EMPTY_VALIDATION: ParsedTransactionDraft["validation"] = {
@@ -122,6 +126,13 @@ function detectHeader(tokens: string[]): ColumnMapping {
 
     if (normalized === "ora") {
       mapping.timeIdx = index;
+      mapping.hasHeader = true;
+    }
+
+    if (normalized === "categoria" ||
+      normalized === "category"
+    ) {
+      mapping.categoryIdx = index;
       mapping.hasHeader = true;
     }
 
@@ -351,11 +362,18 @@ function tryParseCreditAgricoleCardTransaction(description: string) {
 
 function getCategory(
   inferredType: "i" | "o" | "t",
-  defaultCategoryId?: { in?: string; out?: string },
+  rawCategory: string | undefined,
+  opts: ParseExcelTransactionsOptions,
 ) {
-  if (!defaultCategoryId || inferredType == "t") return;
+  if (inferredType == "t") return;
 
-  return inferredType == "i" ? defaultCategoryId.in : defaultCategoryId.out;
+  const key = inferredType == "i" ? "in" : "out";
+  if (rawCategory) {
+    const category = findMatch(opts.categories[key], x => x.name, rawCategory)
+    if (category) return category.id;
+  }
+
+  return opts.defaultCategoryId?.[key];
 }
 
 export function parseExcelTransactions(
@@ -447,8 +465,10 @@ export function parseExcelTransactions(
       inferredType = "i";
     }
 
+    const rawCategory = (mapping.categoryIdx !== undefined ? tokens[mapping.categoryIdx] : undefined);
+
     const categoryId =
-      getCategory(inferredType, opts.defaultCategoryId) ?? null;
+      getCategory(inferredType, rawCategory, opts) ?? null;
 
     const baseDraft: ParsedTransactionDraft = {
       id: generateDraftId(),
