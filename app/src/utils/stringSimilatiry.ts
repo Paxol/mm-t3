@@ -47,7 +47,7 @@ const SUBSTRING_LENGHT = 2;
  * @param {boolean} [caseSensitive=false] Optional. Whether you want to consider case in string matching. Default false;
  * @returns Number between 0 and 1, with 0 being a low match score.
  */
-export function stringSimilarity(str1: string, str2: string, caseSensitive: boolean = false) {
+export function stringSimilarity(str1: string, str2: string, caseSensitive = false) {
 	str1 = str1.replaceAll(" ", "");
 	str2 = str2.replaceAll(" ", "");
 
@@ -64,7 +64,7 @@ export function stringSimilarity(str1: string, str2: string, caseSensitive: bool
 	let match = 0;
 	for (let j = 0; j < str2.length - (SUBSTRING_LENGHT - 1); j++) {
 		const substr2 = str2.substring(j, j + SUBSTRING_LENGHT);
-		const count = map.has(substr2) ? map.get(substr2)! : 0;
+		const count = map.has(substr2) ? map.get(substr2) ?? 0 : 0;
 		if (count > 0) {
 			map.set(substr2, count - 1);
 			match++;
@@ -72,11 +72,11 @@ export function stringSimilarity(str1: string, str2: string, caseSensitive: bool
 	}
 
 	return (match * 2) / (str1.length + str2.length - ((SUBSTRING_LENGHT - 1) * 2));
-};
+}
 
 const substringMapCache = new Map<string, Map<string, number>>();
 
-function calculateSubstringMap(str1: string, caseSensitive: boolean = false) {
+function calculateSubstringMap(str1: string, caseSensitive = false) {
 	str1 = str1.replaceAll(" ", "");
 
 	if (!caseSensitive) {
@@ -87,12 +87,12 @@ function calculateSubstringMap(str1: string, caseSensitive: boolean = false) {
 		return new Map<string, number>();
 
 	if (substringMapCache.has(str1))
-		return new Map(substringMapCache.get(str1)!)
+		return new Map(substringMapCache.get(str1))
 
 	const map = new Map<string, number>();
 	for (let i = 0; i < str1.length - (SUBSTRING_LENGHT - 1); i++) {
 		const substr1 = str1.substring(i, i + SUBSTRING_LENGHT);
-		map.set(substr1, map.has(substr1) ? map.get(substr1)! + 1 : 1);
+		map.set(substr1, map.has(substr1) ? (map.get(substr1) ?? 0) + 1 : 1);
 	}
 	return map;
 }
