@@ -98,14 +98,19 @@ export const ImportTransactionsDialog: React.FC<
     }
 
     try {
+      const categoriesOption = {
+        in: categories.filter((x) => x.type == "in"),
+        out: categories.filter((x) => x.type == "out"),
+      };
       const { drafts: parsedDrafts, globalWarnings: warnings } =
         parseExcelTransactions(trimmed, {
           numberParsingStyle: numberParsingStyle,
           defaultWalletId: defaultWalletIdState,
           defaultCategoryId: {
-            in: categories.find((x) => x.type == "in")?.id,
-            out: categories.find((x) => x.type == "out")?.id,
+            in: categoriesOption.in.at(0)?.id,
+            out: categoriesOption.out.at(0)?.id,
           },
+          categories: categoriesOption
         });
 
       setDrafts(parsedDrafts);
@@ -114,6 +119,7 @@ export const ImportTransactionsDialog: React.FC<
       setParseError(undefined);
       setSubmitError(null);
     } catch (e) {
+      console.error(e);
       setParseError("Errore durante l'analisi del testo. Verifica il formato.");
       setHasParsed(false);
       setDrafts([]);
